@@ -1,0 +1,327 @@
+{% extends 'menu/management/base.html' %}
+
+{% block title %}Dashboard | Menu Management Panel{% endblock %}
+
+{% block page_title %}Menu Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Dashboard Design System - Core Styles */
+    .dashboard-stats {
+        margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        position: relative;
+        border: none;
+        height: 100%;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    }
+    
+    .stat-card-inner {
+        position: relative;
+        z-index: 2;
+        padding: 1.5rem;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 100%);
+        z-index: 1;
+    }
+    
+    .stat-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+    }
+    
+    .stat-card-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: rgba(255, 255, 255, 0.2);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .stat-card:hover .stat-card-icon {
+        transform: scale(1.1) rotate(5deg);
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+    }
+    
+    .stat-card-icon i {
+        font-size: 1.8rem;
+        color: rgba(255, 255, 255, 0.9);
+    }
+    
+    .stat-card-body {
+        flex-grow: 1;
+    }
+    
+    .stat-card-title {
+        font-size: 1rem;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+        color: rgba(255, 255, 255, 0.7);
+    }
+    
+    .stat-card-value {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        color: white;
+    }
+    
+    .stat-card-desc {
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.7);
+    }
+    
+    .stat-card-footer {
+        margin-top: auto;
+        padding-top: 1rem;
+    }
+    
+    .stat-card-footer .btn {
+        border-radius: 10px;
+        padding: 0.5rem 1rem;
+        background-color: rgba(255, 255, 255, 0.15);
+        color: white;
+        border: none;
+        transition: all 0.3s ease;
+        font-weight: 500;
+    }
+    
+    .stat-card-footer .btn:hover {
+        background-color: rgba(255, 255, 255, 0.25);
+        transform: translateY(-2px);
+    }
+    
+    /* Color Schemes */
+    .stat-card.primary {
+        background: linear-gradient(135deg, #6e8efb 0%, #4a6cf7 100%);
+    }
+    
+    .stat-card.success {
+        background: linear-gradient(135deg, #48d6a8 0%, #029666 100%);
+    }
+    
+    .stat-card.info {
+        background: linear-gradient(135deg, #5ccaed 0%, #23a6d5 100%);
+    }
+    
+    .stat-card.warning {
+        background: linear-gradient(135deg, #ffcf17 0%, #ff9a00 100%);
+    }
+    
+    /* Quick Actions */
+    .action-card {
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+        position: relative;
+        border: none;
+        background-color: white;
+    }
+    
+    .action-card:hover {
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    }
+    
+    .action-card-header {
+        padding: 1.2rem 1.5rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        background-color: rgba(248, 249, 250, 0.5);
+    }
+    
+    .action-card-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 0;
+        color: #344767;
+    }
+    
+    .action-card-body {
+        padding: 1.5rem;
+    }
+    
+    .action-btn {
+        padding: 0.8rem 1.5rem;
+        border-radius: 10px;
+        font-weight: 500;
+        text-align: center;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    }
+    
+    .action-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .action-btn i {
+        margin-left: 0.75rem;
+        font-size: 1.1rem;
+    }
+    
+    .action-btn.primary {
+        background-color: #4a6cf7;
+        color: white;
+    }
+    
+    .action-btn.success {
+        background-color: #2dce89;
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Main Stats -->
+<div class="row dashboard-stats">
+    <div class="col-md-6 col-lg-3 mb-4">
+        <div class="stat-card primary">
+            <div class="stat-card-inner">
+                <div class="stat-card-header">
+                    <div class="stat-card-icon">
+                        <i class="fas fa-folder"></i>
+                    </div>
+                </div>
+                <div class="stat-card-body">
+                    <div class="stat-card-title">Categories</div>
+                    <div class="stat-card-value">{{ categories_count }}</div>
+                    <div class="stat-card-desc">Total number of categories</div>
+                </div>
+                <div class="stat-card-footer">
+                    <a href="{% url 'menu:management_category_list' %}" class="btn btn-sm w-100">
+                        <i class="fas fa-arrow-left me-1"></i>
+                        View Categories
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-lg-3 mb-4">
+        <div class="stat-card success">
+            <div class="stat-card-inner">
+                <div class="stat-card-header">
+                    <div class="stat-card-icon">
+                        <i class="fas fa-utensils"></i>
+                    </div>
+                </div>
+                <div class="stat-card-body">
+                    <div class="stat-card-title">Products</div>
+                    <div class="stat-card-value">{{ products_count }}</div>
+                    <div class="stat-card-desc">Total number of products</div>
+                </div>
+                <div class="stat-card-footer">
+                    <a href="{% url 'menu:management_product_list' %}" class="btn btn-sm w-100">
+                        <i class="fas fa-arrow-left me-1"></i>
+                        View Products
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-lg-3 mb-4">
+        <div class="stat-card info">
+            <div class="stat-card-inner">
+                <div class="stat-card-header">
+                    <div class="stat-card-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                </div>
+                <div class="stat-card-body">
+                    <div class="stat-card-title">Active Products</div>
+                    <div class="stat-card-value">{{ active_products }}</div>
+                    <div class="stat-card-desc">Number of active products</div>
+                </div>
+                <div class="stat-card-footer">
+                    <a href="{% url 'menu:management_product_list' %}?is_active=true" class="btn btn-sm w-100">
+                        <i class="fas fa-arrow-left me-1"></i>
+                        View Active
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-lg-3 mb-4">
+        <div class="stat-card warning">
+            <div class="stat-card-inner">
+                <div class="stat-card-header">
+                    <div class="stat-card-icon">
+                        <i class="fas fa-box-open"></i>
+                    </div>
+                </div>
+                <div class="stat-card-body">
+                    <div class="stat-card-title">Available Products</div>
+                    <div class="stat-card-value">{{ available_products }}</div>
+                    <div class="stat-card-desc">Number of available products</div>
+                </div>
+                <div class="stat-card-footer">
+                    <a href="{% url 'menu:management_product_list' %}?is_available=true" class="btn btn-sm w-100">
+                        <i class="fas fa-arrow-left me-1"></i>
+                        View Available
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="action-card">
+            <div class="action-card-header">
+                <h5 class="action-card-title">Quick Actions</h5>
+            </div>
+            <div class="action-card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <a href="{% url 'menu:management_category_add' %}" class="action-btn primary mb-3 w-100">
+                            <i class="fas fa-plus"></i>
+                            Add New Category
+                        </a>
+                    </div>
+                    <div class="col-md-6">
+                        <a href="{% url 'menu:management_product_add' %}" class="action-btn success mb-3 w-100">
+                            <i class="fas fa-plus"></i>
+                            Add New Product
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

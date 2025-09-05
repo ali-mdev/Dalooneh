@@ -1,0 +1,313 @@
+{% extends 'tables/management/base.html' %}
+
+{% block title %}Session Details{% endblock %}
+
+{% block page_title %}Session Details for Table #{{ session.table.number }}{% endblock %}
+
+{% block toolbar_buttons %}
+{% if session.is_active %}
+<button type="button" class="btn btn-danger deactivate-session" data-id="{{ session.id }}">
+    <i class="fas fa-times me-1"></i>
+    Deactivate Session
+</button>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Session Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <table class="table">
+                            <tr>
+                                <th>Session ID:</th>
+                                <td>{{ session.id }}</td>
+                            </tr>
+                            <tr>
+                                <th>Table:</th>
+                                <td>
+                                    <a href="{% url 'tables:management_table_detail' session.table.id %}">
+                                        Table {{ session.table.number }}
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Token:</th>
+                                <td>{{ session.token }}</td>
+                            </tr>
+                            <tr>
+                                <th>Status:</th>
+                                <td>
+                                    {% if session.is_active %}
+                                        {% if session.is_expired %}
+                                        <span class="badge bg-warning">Expired</span>
+                                        {% else %}
+                                        <span class="badge bg-success">Active</span>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="badge bg-danger">Inactive</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <table class="table">
+                            <tr>
+                                <th>Created At:</th>
+                                <td>{{ session.created_at|date:"Y/m/d H:i:s" }}</td>
+                            </tr>
+                            <tr>
+                                <th>Expiry Time:</th>
+                                <td>{{ session.expires_at|date:"Y/m/d H:i:s" }}</td>
+                            </tr>
+                            <tr>
+                                <th>Last Used:</th>
+                                <td>{{ session.last_used|date:"Y/m/d H:i:s" }}</td>
+                            </tr>
+                            <tr>
+                                <th>Order:</th>
+                                <td>
+                                    {% if session.order_submitted %}
+                                    <span class="badge bg-success">Order Submitted</span>
+                                    {% else %}
+                                    <span class="badge bg-warning">Selecting</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-12">
+                        <div class="d-flex justify-content-between mb-3">
+                            <h6>Operations</h6>
+                        </div>
+                        
+                        <div class="btn-group">
+                            <a href="{% url 'tables:management_table_detail' session.table.id %}" class="btn btn-primary">
+                                <i class="fas fa-chair me-1"></i>
+                                View Table
+                            </a>
+                            
+                            {% if session.table.is_occupied and session.table.current_order %}
+                            <a href="{% url 'orders:management_order_detail' session.table.current_order.id %}" class="btn btn-info">
+                                <i class="fas fa-file-invoice me-1"></i>
+                                View Order
+                            </a>
+                            {% endif %}
+                            
+                            {% if session.is_active %}
+                            <button type="button" class="btn btn-danger deactivate-session" data-id="{{ session.id }}">
+                                <i class="fas fa-times me-1"></i>
+                                Deactivate Session
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Table Information</h5>
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <tr>
+                        <th>Table Number:</th>
+                        <td>{{ session.table.number }}</td>
+                    </tr>
+                    <tr>
+                        <th>Capacity:</th>
+                        <td>{{ session.table.seats }} People</td>
+                    </tr>
+                    <tr>
+                        <th>Activity Status:</th>
+                        <td>
+                            {% if session.table.is_active %}
+                            <span class="badge bg-success">Active</span>
+                            {% else %}
+                            <span class="badge bg-danger">Inactive</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Occupancy Status:</th>
+                        <td>
+                            {% if session.table.is_occupied %}
+                            <span class="badge bg-danger">Occupied</span>
+                            {% else %}
+                            <span class="badge bg-success">Free</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                </table>
+                
+                <a href="{% url 'tables:management_table_detail' session.table.id %}" class="btn btn-outline-primary w-100 mt-3">
+                    <i class="fas fa-eye me-1"></i>
+                    View Table Details
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if pending_cart_items %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Shopping Cart Items</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Price</th>
+                                <th>Quantity</th>
+                                <th>Total Price</th>
+                                <th>Notes</th>
+                                <th>Added At</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in pending_cart_items %}
+                            <tr>
+                                <td>{{ item.product.name }}</td>
+                                <td>{{ item.price|floatformat:0 }} USD</td>
+                                <td>{{ item.quantity }}</td>
+                                <td>{{ item.total_price|floatformat:0 }} USD</td>
+                                <td>{{ item.notes|default:"-" }}</td>
+                                <td>{{ item.created_at|date:"Y/m/d H:i:s" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center">Shopping cart is empty</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if active_order %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Active Order</h5>
+                <a href="{% url 'orders:management_order_detail' active_order.id %}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-external-link-alt me-1"></i>
+                    View Order Details
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <table class="table">
+                            <tr>
+                                <th>Order No.:</th>
+                                <td>{{ active_order.order_number }}</td>
+                            </tr>
+                            <tr>
+                                <th>Customer:</th>
+                                <td>{% if active_order.customer %}{{ active_order.customer }}{% else %}Guest{% endif %}</td>
+                            </tr>
+                            <tr>
+                                <th>Order Date:</th>
+                                <td>{{ active_order.created_at|date:"Y/m/d H:i" }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <table class="table">
+                            <tr>
+                                <th>Order Status:</th>
+                                <td>
+                                    <span class="badge {% if active_order.status == 'cancelled' %}bg-danger{% elif active_order.status == 'delivered' %}bg-success{% elif active_order.status == 'ready' %}bg-info{% else %}bg-warning{% endif %}">
+                                        {{ active_order.get_status_display }}
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Payment Status:</th>
+                                <td>
+                                    <span class="badge {% if active_order.payment_status == 'paid' %}bg-success{% elif active_order.payment_status == 'partial' %}bg-warning{% else %}bg-danger{% endif %}">
+                                        {{ active_order.get_payment_status_display }}
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Final Amount:</th>
+                                <td>{{ active_order.final_amount|floatformat:0 }} USD</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Price</th>
+                                <th>Quantity</th>
+                                <th>Total Price</th>
+                                <th>Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in order_items %}
+                            <tr>
+                                <td>{{ item.product.name }}</td>
+                                <td>{{ item.price|floatformat:0 }} USD</td>
+                                <td>{{ item.quantity }}</td>
+                                <td>{{ item.total_price|floatformat:0 }} USD</td>
+                                <td>{{ item.notes|default:"-" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center">No items in this order</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const deactivateButtons = document.querySelectorAll('.deactivate-session');
+        deactivateButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const sessionId = this.getAttribute('data-id');
+                if (confirm('Are you sure you want to deactivate this session?')) {
+                    window.location.href = `{% url 'tables:management_session_deactivate' %}?session_id=${sessionId}&return_to=detail`;
+                }
+            });
+        });
+    });
+</script>
+{% endblock %} 

@@ -1,0 +1,160 @@
+{% extends 'tables/management/base.html' %}
+
+{% block title %}Active Sessions{% endblock %}
+
+{% block page_title %}Active Sessions{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/material_blue.css">
+{% endblock %}
+
+{% block content %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">Filters</h5>
+    </div>
+    <div class="card-body">
+        <form method="get" action="{% url 'tables:management_session_list' %}">
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <label for="status" class="form-label">Status</label>
+                    <select class="form-select" id="status" name="status">
+                        <option value="">All Statuses</option>
+                        <option value="active" {% if status == 'active' %}selected{% endif %}>Active</option>
+                        <option value="inactive" {% if status == 'inactive' %}selected{% endif %}>Inactive</option>
+                        <option value="expired" {% if status == 'expired' %}selected{% endif %}>Expired</option>
+                    </select>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="table" class="form-label">Table</label>
+                    <select class="form-select" id="table" name="table">
+                        <option value="">All Tables</option>
+                        {% for t in all_tables %}
+                        <option value="{{ t.id }}" {% if table_id == t.id|stringformat:"i" %}selected{% endif %}>Table {{ t.number }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="date_from" class="form-label">From Date</label>
+                                            <input type="text" class="form-control date-picker" id="date_from" name="date_from" value="{{ date_from }}" placeholder="Select date">
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="date_to" class="form-label">To Date</label>
+                                            <input type="text" class="form-control date-picker" id="date_to" name="date_to" value="{{ date_to }}" placeholder="Select date">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12 text-end">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-filter me-1"></i>
+                        Apply Filter
+                    </button>
+                    <a href="{% url 'tables:management_session_list' %}" class="btn btn-secondary">
+                        <i class="fas fa-times me-1"></i>
+                        Clear Filters
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Sessions List</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                                                        <th>ID</th>
+                                <th>Table</th>
+                                <th>Token</th>
+                                <th>Status</th>
+                                <th>Created At</th>
+                                <th>Expiry Time</th>
+                                <th>Last Used</th>
+                                <th>Order</th>
+                                <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for session in sessions %}
+                    <tr>
+                        <td>{{ session.id }}</td>
+                        <td>
+                            <a href="{% url 'tables:management_table_detail' session.table.id %}">
+                                Table {{ session.table.number }}
+                            </a>
+                        </td>
+                        <td>{{ session.token|truncatechars:8 }}</td>
+                        <td>
+                            {% if session.is_active %}
+                                {% if session.is_expired %}
+                                <span class="badge bg-warning">Expired</span>
+                                {% else %}
+                                <span class="badge bg-success">Active</span>
+                                {% endif %}
+                            {% else %}
+                                <span class="badge bg-danger">Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ session.created_at|date:"Y/m/d H:i" }}</td>
+                        <td>{{ session.expires_at|date:"Y/m/d H:i" }}</td>
+                        <td>{{ session.last_used|date:"Y/m/d H:i" }}</td>
+                        <td>
+                            {% if session.order_submitted %}
+                            <span class="badge bg-success">Order Submitted</span>
+                            {% else %}
+                            <span class="badge bg-warning">Selecting</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'tables:management_session_detail' session.id %}" class="btn btn-sm btn-outline-info" title="View Details">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            {% if session.is_active %}
+                            <button type="button" class="btn btn-sm btn-outline-danger deactivate-session" data-id="{{ session.id }}" title="Deactivate">
+                                <i class="fas fa-times"></i>
+                            </button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9" class="text-center">No sessions found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fa.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        flatpickr(".date-picker", {
+            locale: "en",
+            dateFormat: "Y-m-d",
+            allowInput: true
+        });
+        
+        // Handle session deactivation
+        const deactivateButtons = document.querySelectorAll('.deactivate-session');
+        deactivateButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const sessionId = this.getAttribute('data-id');
+                if (confirm('Are you sure you want to deactivate this session?')) {
+                    window.location.href = `{% url 'tables:management_session_deactivate' %}?session_id=${sessionId}`;
+                }
+            });
+        });
+    });
+</script>
+{% endblock %} 

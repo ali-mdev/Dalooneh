@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}Test QR Code{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">Test QR Code for Table Number {{ table.number }}</h3>
+                </div>
+                <div class="card-body p-4 text-center">
+                    <div class="alert alert-info mb-4">
+                        <p class="lead mb-1"><strong>Description:</strong></p>
+                        <p>1. This QR code is permanent and is engraved on the table.</p>
+                        <p>2. When scanning the QR code, a temporary token (12 minutes) is activated for the table each time.</p>
+                        <p>3. Current token: <code>{{ token }}</code></p>
+                        <p>4. Expiration time: {{ expires_at }}</p>
+                    </div>
+                    
+                    <div class="qr-container my-4">
+                        <img src="{{ qr_url }}" alt="QR Code" class="img-fluid" style="max-width: 250px;">
+                    </div>
+                    
+                    <div class="url-container mb-4">
+                        <p>Permanent QR code address:</p>
+                        <div class="input-group">
+                            <input type="text" class="form-control" value="{{ table_url }}" id="tokenUrl" readonly>
+                            <button class="btn btn-outline-secondary" type="button" id="copyBtn" onclick="copyTokenUrl()">Copy</button>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <a href="{% url 'home' %}" class="btn btn-secondary me-2">Back to Home</a>
+                        <a href="{{ table_url }}" class="btn btn-primary">Test Table Connection</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function copyTokenUrl() {
+        var tokenUrl = document.getElementById("tokenUrl");
+        tokenUrl.select();
+        tokenUrl.setSelectionRange(0, 99999);
+        document.execCommand("copy");
+        
+        var copyBtn = document.getElementById("copyBtn");
+        copyBtn.innerHTML = "Copied!";
+        copyBtn.classList.remove("btn-outline-secondary");
+        copyBtn.classList.add("btn-success");
+        
+        setTimeout(function() {
+            copyBtn.innerHTML = "Copy";
+            copyBtn.classList.remove("btn-success");
+            copyBtn.classList.add("btn-outline-secondary");
+        }, 2000);
+    }
+</script>
+{% endblock %} 

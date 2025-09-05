@@ -1,0 +1,66 @@
+{% extends 'menu/management/base.html' %}
+{% load humanize %}
+
+{% block title %}Delete Product | Menu Management Panel{% endblock %}
+
+{% block page_title %}Delete Product{% endblock %}
+
+{% block toolbar_buttons %}
+<a href="{% url 'menu:management_product_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-right me-1"></i> Back to List
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="card border-danger">
+    <div class="card-header bg-danger text-white">
+        <h5 class="mb-0">Are you sure you want to delete the product "{{ product.name }}"?</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Warning: This operation is irreversible!
+                </div>
+                
+                <div class="mb-4">
+                    <strong>Product Information:</strong>
+                    <ul class="mt-2">
+                                                  <li>Name: {{ product.name }}</li>
+                                                  <li>Category: {{ product.category.name }}</li>
+                                                  <li>Price: {{ product.price|floatformat:0|intcomma }} USD</li>
+                                                  <li>Status: {% if product.is_active %}Active{% else %}Inactive{% endif %}</li>
+                                                  <li>Availability: {% if product.is_available %}Available{% else %}Unavailable{% endif %}</li>
+                                                  <li>Preparation Time: {{ product.preparation_time }} minutes</li>
+                                                  <li>Created At: {{ product.created_at|date:"Y/m/d" }}</li>
+                    </ul>
+                </div>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-flex justify-content-between">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash me-1"></i> Yes, Delete
+                        </button>
+                        <a href="{% url 'menu:management_product_list' %}" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="col-md-4">
+                {% if product.image %}
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h5 class="card-title">Product Image</h5>
+                    </div>
+                    <div class="card-body text-center">
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}" class="img-fluid rounded" style="max-height: 200px;">
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

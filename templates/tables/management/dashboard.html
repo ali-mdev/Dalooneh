@@ -1,0 +1,609 @@
+{% extends 'tables/management/base.html' %}
+
+{% block title %}Table Management Dashboard{% endblock %}
+
+{% block page_title %}Table Management Dashboard{% endblock %}
+
+{% block toolbar_buttons %}
+{% if occupied_table_count > 0 %}
+<button id="freeAllTablesBtn" class="btn btn-danger">
+    <i class="fas fa-chair me-1"></i>
+    Free All Tables
+</button>
+{% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Dashboard Design System - Core Styles */
+    .dashboard-stats {
+        margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        position: relative;
+        border: none;
+        height: 100%;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    }
+    
+    .stat-card-inner {
+        position: relative;
+        z-index: 2;
+        padding: 1.5rem;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 100%);
+        z-index: 1;
+    }
+    
+    .stat-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+    }
+    
+    .stat-card-icon {
+        width: 70px;
+        height: 70px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: rgba(255, 255, 255, 0.2);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .stat-card:hover .stat-card-icon {
+        transform: scale(1.1) rotate(5deg);
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+    }
+    
+    .stat-card-icon i {
+        font-size: 2rem;
+        color: rgba(255, 255, 255, 0.9);
+    }
+    
+    .stat-card-body {
+        flex-grow: 1;
+        text-align: center;
+    }
+    
+    .stat-card-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: rgba(255, 255, 255, 0.9);
+    }
+    
+    .stat-card-value {
+        font-size: 3rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        color: white;
+    }
+    
+    .stat-card-footer {
+        margin-top: auto;
+        padding-top: 1rem;
+    }
+    
+    .stat-card-footer .btn {
+        border-radius: 10px;
+        padding: 0.6rem 1.2rem;
+        background-color: rgba(255, 255, 255, 0.15);
+        color: white;
+        border: none;
+        transition: all 0.3s ease;
+        font-weight: 500;
+    }
+    
+    .stat-card-footer .btn:hover {
+        background-color: rgba(255, 255, 255, 0.25);
+        transform: translateY(-2px);
+    }
+    
+    /* Color Schemes */
+    .stat-card.primary {
+        background: linear-gradient(135deg, #6e8efb 0%, #4a6cf7 100%);
+    }
+    
+    .stat-card.success {
+        background: linear-gradient(135deg, #48d6a8 0%, #029666 100%);
+    }
+    
+    .stat-card.danger {
+        background: linear-gradient(135deg, #ff6b6b 0%, #e53935 100%);
+    }
+
+    /* Data Tables */
+    .data-card {
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+        position: relative;
+        border: none;
+        background-color: white;
+        margin-bottom: 1.5rem;
+    }
+    
+    .data-card:hover {
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    }
+    
+    .data-card-header {
+        padding: 1.2rem 1.5rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        background-color: rgba(248, 249, 250, 0.5);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .data-card-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 0;
+        color: #344767;
+    }
+    
+    .data-card-body {
+        padding: 1.5rem;
+    }
+    
+    .data-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+    
+    .data-table th {
+        font-weight: 600;
+        color: #344767;
+        background-color: rgba(248, 249, 250, 0.5);
+        padding: 1rem;
+        font-size: 0.85rem;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    
+    .data-table td {
+        padding: 1rem;
+        vertical-align: middle;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        font-size: 0.95rem;
+    }
+    
+    .data-table tr:last-child td {
+        border-bottom: none;
+    }
+    
+    .data-table tr:hover td {
+        background-color: rgba(248, 249, 250, 0.5);
+    }
+    
+    .badge {
+        padding: 0.5rem 0.8rem;
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 0.8rem;
+    }
+    
+    .btn-table {
+        border-radius: 8px;
+        padding: 0.4rem 0.7rem;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-table:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Custom Dialogs */
+    .custom-confirm-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.6);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        backdrop-filter: blur(5px);
+    }
+
+    .custom-confirm-dialog {
+        width: 420px;
+        background-color: white;
+        border-radius: 16px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        overflow: hidden;
+        transform: scale(0.95);
+        opacity: 0;
+        transition: all 0.3s ease;
+    }
+    
+    .custom-confirm-overlay.active .custom-confirm-dialog {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    .custom-confirm-header {
+        padding: 1.2rem 1.5rem;
+        font-weight: 600;
+        font-size: 1.2rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        display: flex;
+        align-items: center;
+    }
+    
+    .custom-confirm-header i {
+        margin-left: 0.75rem;
+        font-size: 1.3rem;
+    }
+
+    .warning-header {
+        background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+        color: #721c24;
+    }
+
+    .danger-header {
+        background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+        color: #721c24;
+    }
+
+    .custom-confirm-body {
+        padding: 1.5rem;
+    }
+
+    .custom-confirm-footer {
+        padding: 1.2rem 1.5rem;
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.75rem;
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .custom-alert {
+        padding: 1rem 1.2rem;
+        margin-bottom: 1rem;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+    }
+    
+    .custom-alert i {
+        font-size: 1.3rem;
+        margin-left: 0.75rem;
+    }
+
+    .custom-alert-warning {
+        background-color: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffeeba;
+    }
+
+    .custom-alert-danger {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+    
+    .btn-dialog {
+        padding: 0.6rem 1.2rem;
+        border-radius: 10px;
+        font-weight: 500;
+        border: none;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+    }
+    
+    .btn-dialog:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Main Stats -->
+<div class="row dashboard-stats">
+    <div class="col-md-4 mb-4">
+        <div class="stat-card primary">
+            <div class="stat-card-inner">
+                <div class="stat-card-body">
+                    <div class="stat-card-icon mx-auto">
+                        <i class="fas fa-chair"></i>
+                    </div>
+                    <div class="stat-card-title">Total Tables</div>
+                    <div class="stat-card-value">{{ table_count }}</div>
+                </div>
+                <div class="stat-card-footer">
+                    <a href="{% url 'tables:management_table_list' %}" class="btn w-100">
+                        <i class="fas fa-arrow-left me-1"></i>
+                        View Tables
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="stat-card success">
+            <div class="stat-card-inner">
+                <div class="stat-card-body">
+                    <div class="stat-card-icon mx-auto">
+                        <i class="fas fa-chair"></i>
+                    </div>
+                    <div class="stat-card-title">Free Tables</div>
+                    <div class="stat-card-value">{{ available_table_count }}</div>
+                </div>
+                <div class="stat-card-footer">
+                    <a href="{% url 'tables:management_table_list' %}?status=available" class="btn w-100">
+                        <i class="fas fa-arrow-left me-1"></i>
+                        View Free Tables
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="stat-card danger">
+            <div class="stat-card-inner">
+                <div class="stat-card-body">
+                    <div class="stat-card-icon mx-auto">
+                        <i class="fas fa-chair"></i>
+                    </div>
+                    <div class="stat-card-title">Occupied Tables</div>
+                    <div class="stat-card-value">{{ occupied_table_count }}</div>
+                </div>
+                <div class="stat-card-footer">
+                    <a href="{% url 'tables:management_table_list' %}?status=occupied" class="btn w-100">
+                        <i class="fas fa-arrow-left me-1"></i>
+                        View Occupied Tables
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Data Tables -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="data-card">
+            <div class="data-card-header">
+                <h5 class="data-card-title">Occupied Tables</h5>
+            </div>
+            <div class="data-card-body">
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Table Number</th>
+                                <th>Capacity</th>
+                                <th>Customer</th>
+                                <th>Order</th>
+                                <th>Time</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for table in occupied_tables %}
+                            <tr>
+                                <td>{{ table.number }}</td>
+                                <td>{{ table.seats }} People</td>
+                                <td>{% if table.current_order.customer %}{{ table.current_order.customer }}{% else %}Guest{% endif %}</td>
+                                <td>
+                                    <a href="{% url 'orders:management_order_detail' table.current_order.id %}" class="btn btn-sm btn-primary btn-table">
+                                        {{ table.current_order.order_number }}
+                                    </a>
+                                </td>
+                                <td>{{ table.current_order.created_at|date:"H:i" }}</td>
+                                <td>
+                                    <a href="{% url 'tables:management_table_detail' table.id %}" class="btn btn-sm btn-info btn-table">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center">There are currently no occupied tables</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="data-card">
+            <div class="data-card-header">
+                <h5 class="data-card-title">Active Sessions</h5>
+            </div>
+            <div class="data-card-body">
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Table</th>
+                                <th>Token</th>
+                                <th>Created At</th>
+                                <th>Expiry Time</th>
+                                <th>Order</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for session in active_sessions %}
+                            <tr>
+                                <td>{{ session.table.number }}</td>
+                                <td>{{ session.token|truncatechars:8 }}</td>
+                                <td>{{ session.created_at|date:"Y/m/d H:i" }}</td>
+                                <td>{{ session.expires_at|date:"Y/m/d H:i" }}</td>
+                                <td>
+                                    {% if session.order_submitted %}
+                                    <span class="badge bg-success">Order Submitted</span>
+                                    {% else %}
+                                    <span class="badge bg-warning text-dark">Selecting</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{% url 'tables:management_session_detail' session.id %}" class="btn btn-sm btn-info btn-table">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-sm btn-danger btn-table deactivate-session" data-session-id="{{ session.id }}">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center">There are currently no active sessions</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Custom confirmation dialog for freeing all tables -->
+<div id="freeAllTablesDialog" class="custom-confirm-overlay">
+    <div class="custom-confirm-dialog">
+        <div class="custom-confirm-header warning-header">
+            <i class="fas fa-exclamation-triangle"></i>
+            Free All Tables
+        </div>
+        <div class="custom-confirm-body">
+            <div class="custom-alert custom-alert-warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span>Are you sure you want to free all occupied tables?</span>
+            </div>
+            <p class="text-danger"><strong>Warning:</strong> This action is irreversible and all ongoing orders will be cancelled.</p>
+        </div>
+        <div class="custom-confirm-footer">
+            <button type="button" class="btn-dialog btn-secondary" onclick="closeConfirmDialog('freeAllTablesDialog')">Cancel</button>
+            <a href="{% url 'tables:management_free_all_tables' %}" class="btn-dialog btn-warning">
+                <i class="fas fa-chair me-1"></i>
+                Free All Tables
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Custom confirmation dialog for deactivating session -->
+<div id="deactivateSessionDialog" class="custom-confirm-overlay">
+    <div class="custom-confirm-dialog">
+        <div class="custom-confirm-header danger-header">
+            <i class="fas fa-times-circle"></i>
+            Deactivate Session
+        </div>
+        <div class="custom-confirm-body">
+            <div class="custom-alert custom-alert-danger">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span>Are you sure you want to deactivate this session?</span>
+            </div>
+            <p>This action will clear the shopping cart and deactivate user access.</p>
+        </div>
+        <div class="custom-confirm-footer">
+            <button type="button" class="btn-dialog btn-secondary" onclick="closeConfirmDialog('deactivateSessionDialog')">Cancel</button>
+            <a href="#" id="confirmDeactivateBtn" class="btn-dialog btn-danger">
+                <i class="fas fa-times me-1"></i>
+                Deactivate
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Dialog for freeing all tables
+        const freeAllTablesBtn = document.getElementById('freeAllTablesBtn');
+        if (freeAllTablesBtn) {
+            freeAllTablesBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                showConfirmDialog('freeAllTablesDialog');
+            });
+        }
+        
+        // Dialog for deactivating session
+        const deactivateButtons = document.querySelectorAll('.deactivate-session');
+        const confirmDeactivateBtn = document.getElementById('confirmDeactivateBtn');
+        
+        deactivateButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const sessionId = this.getAttribute('data-session-id');
+                confirmDeactivateBtn.setAttribute('href', 
+                    `{% url 'tables:management_session_deactivate' %}?session_id=${sessionId}`);
+                showConfirmDialog('deactivateSessionDialog');
+            });
+        });
+    });
+
+    // Show dialog
+    function showConfirmDialog(dialogId) {
+        const dialog = document.getElementById(dialogId);
+        dialog.style.display = 'flex';
+        setTimeout(() => {
+            dialog.classList.add('active');
+        }, 10);
+    }
+
+    // Close dialog
+    function closeConfirmDialog(dialogId) {
+        const dialog = document.getElementById(dialogId);
+        dialog.classList.remove('active');
+        setTimeout(() => {
+            dialog.style.display = 'none';
+        }, 300);
+    }
+
+    // Close dialog by clicking outside content
+    document.addEventListener('click', function(event) {
+        const dialogs = document.querySelectorAll('.custom-confirm-overlay');
+        dialogs.forEach(dialog => {
+            if (event.target === dialog) {
+                dialog.classList.remove('active');
+                setTimeout(() => {
+                    dialog.style.display = 'none';
+                }, 300);
+            }
+        });
+    });
+</script>
+{% endblock %} 

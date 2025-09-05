@@ -1,0 +1,1056 @@
+{% extends 'index.html'%}
+{% load static %}
+{% load humanize %}
+{% load price_filters %}
+{% block content %}
+<br>
+
+    <!-- Font Awesome for Toast Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <div class="app pt-80 pb-70">
+        <div class="tf-container">
+
+    {% if table %}
+    <div class="table-info">
+        <div class="table-info-content">
+            <div class="table-icon"><i class="fas fa-chair"></i></div>
+            <div class="table-details">
+                <h4 class="text-white">Table No. {{ table.number }}</h4>
+                <p class="text-white"><i class="fas fa-users"></i> Capacity: {{ table.seats }} people</p>
+                {% if category %}
+                <p class="text-white"><i class="fas fa-utensils"></i> Category: {{ category.name }}</p>
+                {% elif categories.0 %}
+                <p class="text-white"><i class="fas fa-utensils"></i> Category: {{ categories.0.name }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+   
+
+            <ul>
+                {% if products %}
+                {% for product in products %}
+                <li class="tf-box-row style-2 qty mb-12 product-card">
+                    <div class="img-box">
+                        {% if product.image %}
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                        {% else %}
+                        <img src="{% static 'images/food/default.jpg' %}" alt="{{ product.name }}">
+                        {% endif %}
+                    </div>
+                    <div class="content-box">
+                        <h5>{{ product.name }}</h5>
+                        <div class="product-description-box tooltip-trigger" data-description="{{ product.description }}" data-product-name="{{ product.name }}">
+                            <p class="product-description">{{ product.description|truncatechars:60 }}</p>
+                        </div>
+                        <div class="product-footer">
+                            <div class="price-tag">
+                                <i class="fas fa-tag price-icon"></i>
+                        <div class="total-qty">
+                                    <span class="price">{{ product.price|price_in_thousand }}</span>
+                                </div>
+                            </div>
+                            <form class="add-to-cart-form" data-product-id="{{ product.id }}">
+                                <div class="quantity-control">
+                                    <button type="button" class="quantity-btn minus" data-product-id="{{ product.id }}">-</button>
+                                    <input type="number" class="quantity-input" id="qty-{{ product.id }}" value="1" min="1" max="20" readonly>
+                                    <button type="button" class="quantity-btn plus" data-product-id="{{ product.id }}">+</button>
+                                </div>
+                                <button type="submit" class="btn-small add-to-cart-btn"><i class="fas fa-cart-plus"></i> Add</button>
+                                <div class="cart-status d-none mt-2"></div>
+                            </form>
+                        </div>
+                    </div>
+                </li>
+                {% empty %}
+                <li class="col-12">
+                    <div class="alert alert-info">No products available in this category.</div>
+                </li>
+                {% endfor %}
+                {% elif category %}
+                {% for product in category.products.all %}
+                {% if product.is_active and product.is_available %}
+                <li class="tf-box-row style-2 qty mb-12 product-card">
+                    <div class="img-box">
+                        {% if product.image %}
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                        {% else %}
+                        <img src="{% static 'images/food/default.jpg' %}" alt="{{ product.name }}">
+                        {% endif %}
+                    </div>
+                    <div class="content-box">
+                        <h5>{{ product.name }}</h5>
+                        <div class="product-description-box tooltip-trigger" data-description="{{ product.description }}" data-product-name="{{ product.name }}">
+                            <p class="product-description">{{ product.description|truncatechars:60 }}</p>
+                        </div>
+                        <div class="product-footer">
+                            <div class="price-tag">
+                                <i class="fas fa-tag price-icon"></i>
+                        <div class="total-qty">
+                                    <span class="price">{{ product.price|price_in_thousand }}</span>
+                                </div>
+                            </div>
+                            <form class="add-to-cart-form" data-product-id="{{ product.id }}">
+                                <div class="quantity-control">
+                                    <button type="button" class="quantity-btn minus" data-product-id="{{ product.id }}">-</button>
+                                    <input type="number" class="quantity-input" id="qty-{{ product.id }}" value="1" min="1" max="20" readonly>
+                                    <button type="button" class="quantity-btn plus" data-product-id="{{ product.id }}">+</button>
+                                </div>
+                                <button type="submit" class="btn-small add-to-cart-btn"><i class="fas fa-cart-plus"></i> Add</button>
+                                <div class="cart-status d-none mt-2"></div>
+                            </form>
+                        </div>
+                    </div>
+                </li>
+                {% endif %}
+                {% empty %}
+                <li class="col-12">
+                    <div class="alert alert-info">No products available in this category.</div>
+                </li>
+                {% endfor %}
+                {% else %}
+                <li class="col-12">
+                    <div class="alert alert-info">Please select a category.</div>
+                </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+
+<style>
+    /* Product card styling */
+    .product-card {
+        border-radius: 15px;
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        transition: all 0.3s ease;
+        margin-bottom: 18px !important;
+        background: white;
+        border: 1px solid rgba(0, 0, 0, 0.04);
+    }
+    
+    .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+    }
+    
+    .product-card .img-box {
+        border-radius: 12px;
+        overflow: hidden;
+        margin-left: 15px;
+        position: relative;
+    }
+    
+    .product-card .img-box img {
+        transition: transform 0.5s ease;
+        object-fit: cover;
+        width: 100%;
+        height: 100%;
+    }
+    
+    .product-card:hover .img-box img {
+        transform: scale(1.08);
+    }
+    
+    .product-card .content-box {
+        padding: 12px 8px;
+        flex: 1;
+    }
+    
+    /* Product header */
+    .product-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 10px;
+    }
+    
+    .product-header h5 {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 700;
+    }
+    
+    .product-header h5 a {
+        color: #333;
+        text-decoration: none;
+        transition: color 0.2s;
+    }
+    
+    .product-header h5 a:hover {
+        color: #033F38;
+    }
+    
+    .prep-time {
+        background: #f8f9fa;
+        color: #6c757d;
+        padding: 4px 8px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        display: inline-flex;
+        align-items: center;
+        white-space: nowrap;
+    }
+    
+    .prep-time i {
+        margin-left: 4px;
+        color: #033F38;
+    }
+    
+    /* Enhanced Product description style */
+    .product-description-box {
+        background-color: #fff7e6;
+        border-left: 4px solid #ff9800;
+        padding: 8px 12px;
+        margin: 8px 0 12px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .product-description {
+        font-size: 1rem;
+        color: #333;
+        margin: 0;
+        line-height: 1.5;
+        font-weight: 500;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    /* Estilo de descripción expandida */
+    .product-description-expanded {
+        max-height: 200px;
+        overflow-y: auto;
+        background-color: #FFF9E8;
+        border-left: 4px solid #ff9800;
+        padding: 10px 12px;
+        margin: 8px 0 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+    }
+    
+    .product-description-expanded .product-description {
+        white-space: pre-line;
+        font-size: 0.95rem;
+    }
+    
+    /* Product footer */
+    .product-footer {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    /* Price tag */
+    .price-tag {
+        display: block;
+        margin-bottom: 15px;
+        text-align: left;
+    }
+    
+    .price {
+        background: transparent;
+        color: #086450;
+        font-weight: 800;
+        font-size: 1.3rem;
+        padding: 0;
+        border-radius: 0;
+        box-shadow: none;
+        text-shadow: none;
+        display: block;
+        margin-top: 5px;
+    }
+    
+    .currency {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #086450;
+        opacity: 0.8;
+    }
+    
+    .price-icon {
+        display: none;
+    }
+    
+    /* Quantity control */
+    .quantity-control {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+    
+    .quantity-btn {
+        width: 32px;
+        height: 32px;
+        background: white;
+        font-size: 1rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #033F38;
+        font-weight: bold;
+        transition: all 0.2s ease;
+        border-radius: 6px;
+        border: 1px solid #e9ecef;
+    }
+    
+    .quantity-btn:hover {
+        background: #033F38;
+        color: white;
+        border-color: #033F38;
+    }
+    
+    .quantity-btn:active {
+        transform: scale(0.95);
+    }
+    
+    .quantity-input {
+        width: 40px;
+        height: 32px;
+        text-align: center;
+        border: none;
+        margin: 0 5px;
+        background: transparent;
+        font-weight: 600;
+        color: #333;
+    }
+    
+    /* Add to cart button */
+    .add-to-cart-btn {
+        background: #033F38;
+        color: white;
+        padding: 10px 16px;
+        border-radius: 8px;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 8px rgba(3, 63, 56, 0.2);
+    }
+    
+    .add-to-cart-btn i {
+        margin-right: 8px;
+    }
+    
+    .add-to-cart-btn:hover {
+        background: #044e45;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(3, 63, 56, 0.3);
+    }
+    
+    .add-to-cart-btn:active {
+        transform: translateY(0);
+    }
+    
+    @media (max-width: 768px) {
+        .product-card {
+            margin-bottom: 16px !important;
+        }
+        
+        .product-header h5 {
+            font-size: 1rem;
+        }
+        
+        .prep-time {
+            font-size: 0.75rem;
+            padding: 3px 6px;
+        }
+        
+        .product-description-box {
+            margin: 6px 0 10px;
+            padding: 6px 10px;
+            background-color: #fff7e6;
+        }
+        
+        .product-description {
+            font-size: 0.95rem;
+            -webkit-line-clamp: 1;
+            line-height: 1.3;
+        }
+        
+        .product-description-expanded {
+            max-height: 150px; 
+        }
+        
+        .price {
+            font-size: 1.2rem;
+            font-weight: 800;
+            padding: 0;
+        }
+        
+        .currency {
+            font-size: 0.75rem;
+        }
+        
+        .quantity-btn {
+            width: 30px;
+            height: 30px;
+        }
+        
+        .quantity-input {
+            width: 36px;
+            height: 30px;
+        }
+        
+        .add-to-cart-btn {
+            padding: 8px 14px;
+            font-size: 0.9rem;
+        }
+    }
+    
+    /* Table info */
+    .table-info {
+        background: linear-gradient(135deg, rgba(3, 63, 56, 0.9), rgba(3, 63, 56, 0.8));
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 30px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    }
+    
+    .table-info-content {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+    
+    .table-icon {
+        font-size: 2.5rem;
+        background: rgba(255, 255, 255, 0.15);
+        width: 70px;
+        height: 70px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        color: white;
+    }
+    
+    .table-details h4 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+    
+    .table-details p {
+        margin: 8px 0 0;
+        font-size: 1rem;
+        opacity: 0.9;
+    }
+    
+    .capacity-icon {
+        margin-left: 5px;
+    }
+    
+    /* iPhone-Style Message Box */
+    .ios-notification {
+        position: fixed;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 90%;
+        max-width: 400px;
+        background-color: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 14px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        padding: 12px;
+        z-index: 9999;
+        display: flex;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+        margin: 0 auto;
+    }
+    
+    .ios-notification.show {
+        opacity: 1;
+        visibility: visible;
+        transform: translateX(-50%) translateY(5px);
+    }
+    
+    .ios-notification .notification-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 6px;
+    }
+    
+    .ios-notification .notification-app-icon {
+        height: 20px;
+        width: 20px;
+        border-radius: 5px;
+        margin-left: 6px;
+        background-color: #ff9500;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 14px;
+    }
+    
+    .ios-notification .notification-app-name {
+        font-weight: 600;
+        font-size: 13px;
+        color: #000;
+    }
+    
+    .ios-notification .notification-time {
+        font-size: 12px;
+        color: #8e8e93;
+        margin-right: auto;
+    }
+    
+    .ios-notification .notification-icon {
+        margin-left: 12px;
+        border-radius: 8px;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        color: white;
+    }
+    
+    .ios-notification.success .notification-icon {
+        background-color: #34c759;
+    }
+    
+    .ios-notification.error .notification-icon {
+        background-color: #ff3b30;
+    }
+    
+    .ios-notification .notification-content {
+        flex: 1;
+    }
+    
+    .ios-notification .notification-title {
+        font-weight: 600;
+        margin: 0;
+        font-size: 15px;
+        color: #000;
+        line-height: 1.3;
+    }
+    
+    .ios-notification .notification-message {
+        margin: 2px 0 0;
+        font-size: 14px;
+        color: #333;
+        line-height: 1.3;
+    }
+    
+    .ios-notification .notification-action {
+        margin-top: 8px;
+        background-color: #f2f2f7;
+        padding: 6px 10px;
+        border-radius: 12px;
+        display: inline-block;
+        font-size: 13px;
+        font-weight: 500;
+        color: #007aff;
+        text-decoration: none;
+        transition: background-color 0.2s;
+    }
+    
+    .ios-notification .notification-action:hover {
+        background-color: #e5e5ea;
+        text-decoration: none;
+    }
+    
+    .ios-notification .notification-close {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        width: 18px;
+        height: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background-color: rgba(0, 0, 0, 0.1);
+        color: #8e8e93;
+        font-size: 12px;
+        cursor: pointer;
+        border: none;
+        padding: 0;
+    }
+    
+    @media (max-width: 576px) {
+        .ios-notification {
+            width: 95%;
+            top: 5px;
+            padding: 10px;
+        }
+        
+        .ios-notification .notification-icon {
+            width: 36px;
+            height: 36px;
+            font-size: 18px;
+        }
+        
+        .ios-notification .notification-title {
+            font-size: 14px;
+        }
+        
+        .ios-notification .notification-message {
+            font-size: 13px;
+        }
+    }
+    
+    /* Hide old toast styles */
+    .toast-notification {
+        display: none;
+    }
+    
+    /* Tooltip styles */
+    .tooltip-trigger {
+        position: relative;
+        cursor: pointer;
+    }
+    
+    .tooltip-icon {
+        position: absolute;
+        right: 8px;
+        top: 8px;
+        color: #033F38;
+        font-size: 14px;
+    }
+    
+    .tooltip-content {
+        display: none;
+        position: absolute;
+        z-index: 1000;
+        bottom: 125%;
+        left: 50%;
+        width: 300px;
+        max-width: 90vw;
+        transform: translateX(-50%);
+        padding: 0;
+        color: #333;
+        text-align: left;
+        font-size: 14px;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        transition: opacity 0.3s;
+    }
+    
+    .tooltip-arrow {
+        position: absolute;
+        bottom: -10px;
+        left: 50%;
+        margin-left: -10px;
+        border-width: 10px 10px 0;
+        border-style: solid;
+        border-color: #fff transparent transparent transparent;
+    }
+    
+    .tooltip-inner {
+        padding: 15px;
+        background-color: #fff;
+        border-radius: 8px;
+        white-space: normal;
+        line-height: 1.5;
+        font-weight: 400;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+    
+    .tooltip-trigger:hover .tooltip-content {
+        display: block;
+    }
+    
+    /* Mobile-specific tooltip styles */
+    @media (max-width: 768px) {
+        .tooltip-content {
+            width: 250px;
+            bottom: 130%;
+        }
+        
+        .tooltip-inner {
+            padding: 12px;
+            max-height: 150px;
+            font-size: 13px;
+        }
+        
+        .tooltip-open .tooltip-content {
+            display: block;
+        }
+        
+        /* Hide on hover for mobile - we'll use click instead */
+        .tooltip-trigger:hover .tooltip-content {
+            display: none;
+        }
+    }
+    
+    #description-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.45);
+        z-index: 2000;
+        justify-content: center;
+        align-items: center;
+        backdrop-filter: blur(3px);
+        -webkit-backdrop-filter: blur(3px);
+    }
+    
+    #description-modal-content {
+        background-color: white;
+        width: 320px;
+        max-width: 85%;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        overflow: hidden;
+        animation: modalAppear 0.25s ease;
+        text-align: left;
+        position: relative;
+        padding: 0;
+    }
+    
+    #description-modal-close {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        width: 24px;
+        height: 24px;
+        background: rgba(0, 0, 0, 0.1);
+        border: none;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        color: #333;
+        cursor: pointer;
+        z-index: 5;
+        line-height: 1;
+        padding: 0;
+    }
+    
+    #description-modal-title {
+        font-weight: 700;
+        margin: 0;
+        font-size: 17px;
+        color: #033F38;
+        padding: 16px 16px 0;
+        text-align: left;
+    }
+    
+    #description-modal-body {
+        padding: 12px 16px 16px;
+        line-height: 1.6;
+        font-size: 14px;
+        color: #333;
+        max-height: 60vh;
+        overflow-y: auto;
+    }
+    
+    @keyframes modalAppear {
+        from {
+            opacity: 0;
+            transform: translateY(15px) scale(0.95);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+    
+    @media (max-width: 768px) {
+        #description-modal-content {
+            width: 300px;
+        }
+        
+        #description-modal-body {
+            max-height: 50vh;
+            padding: 12px 16px 16px;
+            font-size: 13px;
+        }
+        
+        #description-modal-title {
+            font-size: 16px;
+        }
+    }
+</style>
+
+<div id="description-modal">
+    <div id="description-modal-content">
+        <button id="description-modal-close">×</button>
+        <h5 id="description-modal-title">Product details</h5>
+        <div id="description-modal-body"></div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Create modal elements
+        const descriptionModal = document.getElementById('description-modal');
+        const descriptionModalBody = document.getElementById('description-modal-body');
+        const descriptionModalTitle = document.getElementById('description-modal-title');
+        const descriptionModalClose = document.getElementById('description-modal-close');
+        
+        // Close modal when X is clicked
+        descriptionModalClose.addEventListener('click', function() {
+            descriptionModal.style.display = 'none';
+        });
+        
+        // Close modal when clicking outside modal content
+        descriptionModal.addEventListener('click', function(e) {
+            if (e.target === descriptionModal) {
+                descriptionModal.style.display = 'none';
+            }
+        });
+        
+        // Show description in modal when tooltip trigger is clicked
+        document.querySelectorAll('.tooltip-trigger').forEach(trigger => {
+            trigger.addEventListener('click', function() {
+                const description = this.getAttribute('data-description');
+                const productName = this.getAttribute('data-product-name');
+                
+                if (description) {
+                    // Update modal title with product name if available
+                    if (productName) {
+                        descriptionModalTitle.textContent = productName;
+                    } else {
+                        descriptionModalTitle.textContent = 'Product Description';
+                    }
+                    
+                    descriptionModalBody.textContent = description;
+                    descriptionModal.style.display = 'flex';
+                }
+            });
+        });
+        
+        // Simple quantity control
+        document.querySelectorAll('.quantity-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const productId = this.getAttribute('data-product-id');
+                const input = document.getElementById('qty-' + productId);
+                const currentValue = parseInt(input.value);
+                
+                if (this.classList.contains('minus') && currentValue > 1) {
+                    input.value = currentValue - 1;
+                } else if (this.classList.contains('plus') && currentValue < 20) {
+                    input.value = currentValue + 1;
+                }
+            });
+        });
+        
+        // Create notification box on page load (initially hidden)
+        if (!document.getElementById('ios-notification-container')) {
+            const notifContainer = document.createElement('div');
+            notifContainer.id = 'ios-notification-container';
+            document.body.appendChild(notifContainer);
+            
+            // Create the notification element once
+            const notification = document.createElement('div');
+            notification.id = 'ios-notification';
+            notification.className = 'ios-notification';
+            notification.innerHTML = `
+                <div class="notification-header">
+                    <div class="notification-app-icon">
+                        <i class="fas fa-utensils"></i>
+                    </div>
+                    <div class="notification-app-name">Dalooneh</div>
+                    <div id="notification-time"></div>
+                </div>
+                <div style="display: flex;">
+                    <div class="notification-icon">
+                        <i id="notification-icon-symbol" class="fas"></i>
+                    </div>
+                    <div class="notification-content">
+                        <h5 id="notification-title" class="notification-title"></h5>
+                        <p id="notification-message" class="notification-message"></p>
+                        <a id="notification-action" class="notification-action" style="display: none;"></a>
+                    </div>
+                </div>
+                <button class="notification-close">&times;</button>
+            `;
+            
+            notifContainer.appendChild(notification);
+            
+            // Set up close button handler
+            notification.querySelector('.notification-close').addEventListener('click', () => {
+                hideNotification();
+            });
+        }
+        
+        // Format current time as HH:MM
+        function formatTime() {
+            const now = new Date();
+            let hours = now.getHours();
+            let minutes = now.getMinutes();
+            
+            // Pad with leading zero if needed
+            hours = hours < 10 ? '0' + hours : hours;
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            
+            return hours + ':' + minutes;
+        }
+        
+        // Function to hide notification with animation
+        function hideNotification() {
+            const notification = document.getElementById('ios-notification');
+            if (notification) {
+                notification.classList.remove('show');
+                // Don't remove the element, just hide it
+            }
+        }
+        
+        // Global variable to track timeout
+        let notificationTimeout;
+        
+        // iOS style notification function - reuses the same element
+        function showNotification(title, message, type, actionLink = null) {
+            const notification = document.getElementById('ios-notification');
+            if (!notification) return;
+            
+            // Clear any existing timeout to prevent premature hiding
+            if (notificationTimeout) {
+                clearTimeout(notificationTimeout);
+            }
+            
+            // Update notification class based on type
+            notification.className = `ios-notification ${type}`;
+            
+            // Update time
+            document.getElementById('notification-time').textContent = formatTime();
+            
+            // Update icon based on type
+            const iconSymbol = document.getElementById('notification-icon-symbol');
+            iconSymbol.className = `fas ${type === 'success' ? 'fa-check' : 'fa-exclamation'}`;
+            
+            // Update content
+            document.getElementById('notification-title').textContent = title;
+            document.getElementById('notification-message').textContent = message;
+            
+            // Update action link if provided
+            const actionElement = document.getElementById('notification-action');
+            if (actionLink) {
+                actionElement.textContent = actionLink.text;
+                actionElement.href = actionLink.url;
+                actionElement.style.display = 'inline-block';
+            } else {
+                actionElement.style.display = 'none';
+            }
+            
+            // Show notification if not already visible
+            if (!notification.classList.contains('show')) {
+                setTimeout(() => {
+                    notification.classList.add('show');
+                }, 10);
+            }
+            
+            // Auto close after 4 seconds
+            notificationTimeout = setTimeout(() => {
+                hideNotification();
+            }, 4000);
+        }
+        
+        // Handle add to cart forms
+        document.querySelectorAll('.add-to-cart-form').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const productId = this.getAttribute('data-product-id');
+                const quantity = document.getElementById('qty-' + productId).value;
+                const submitBtn = this.querySelector('.add-to-cart-btn');
+                
+                // Disable the submit button during the request
+                submitBtn.disabled = true;
+                submitBtn.textContent = '...';
+                
+                // Get the CSRF token from the cookie
+                function getCookie(name) {
+                    let cookieValue = null;
+                    if (document.cookie && document.cookie !== '') {
+                        const cookies = document.cookie.split(';');
+                        for (let i = 0; i < cookies.length; i++) {
+                            const cookie = cookies[i].trim();
+                            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                                break;
+                            }
+                        }
+                    }
+                    return cookieValue;
+                }
+                
+                const csrftoken = getCookie('csrftoken');
+                
+                // Prepare form data
+                const formData = new FormData();
+                formData.append('product_id', productId);
+                formData.append('quantity', quantity);
+                
+                // Make the AJAX request
+                fetch('/tables/add-to-cart/', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrftoken,
+                    },
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Show success message with iOS style notification
+                        showNotification(
+                            'Dalooneh',
+                            'Item added to your cart',
+                            'success',
+                            {
+                                url: "{% url 'tables:view_cart' %}",
+                                text: "View cart"
+                            }
+                        );
+                        
+                        // Dispatch cartUpdated event
+                        document.dispatchEvent(new CustomEvent('cartUpdated', {
+                            detail: { cartCount: data.cart_count }
+                        }));
+                    } else {
+                        // Show error message
+                        showNotification(
+                            'Dalooneh',
+                            data.message || 'Unable to add to cart',
+                            'error'
+                        );
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showNotification(
+                        'Dalooneh',
+                        'There was a problem communicating with the server. Please try again.',
+                        'error'
+                    );
+                })
+                .finally(() => {
+                    // Re-enable the button
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Add';
+                });
+            });
+        });
+    });
+</script>
+
+{% endblock %}

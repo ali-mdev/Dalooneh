@@ -1,0 +1,639 @@
+{% extends 'orders/management/base.html' %}
+{% load humanize %}
+
+{% block title %}Order Details{% endblock %}
+
+{% block page_title %}Order Details #{{ order.order_number }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .order-dashboard {
+        display: grid;
+        grid-template-columns: 3fr 1fr;
+        gap: 20px;
+    }
+    
+    .order-main {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .order-sidebar {
+        position: sticky;
+        top: 20px;
+        height: fit-content;
+    }
+    
+    .order-card {
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        border: none;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+    
+    .order-card:hover {
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+    }
+    
+    .order-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.2rem 1.5rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        background-color: #f8f9fa;
+    }
+    
+    .order-header h5 {
+        margin-bottom: 0;
+        font-weight: 600;
+        color: #344767;
+    }
+    
+    .order-body {
+        padding: 1.5rem;
+    }
+    
+    .status-controls {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .status-buttons {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin-top: 15px;
+    }
+    
+    .status-button {
+        padding: 10px 8px;
+        border-radius: 10px;
+        text-align: center;
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: 2px solid transparent;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+    }
+    
+    .status-button i {
+        font-size: 1.5rem;
+        margin-bottom: 5px;
+    }
+    
+    .status-button.pending {
+        background-color: #fff4de;
+        color: #ff9800;
+        border-color: #ffeccc;
+    }
+    
+    .status-button.pending:hover {
+        background-color: #ffeccc;
+    }
+    
+    .status-button.pending.active {
+        background-color: #ff9800;
+        color: white;
+    }
+    
+    .status-button.confirmed {
+        background-color: #e8f5e9;
+        color: #4caf50;
+        border-color: #c8e6c9;
+    }
+    
+    .status-button.confirmed:hover {
+        background-color: #c8e6c9;
+    }
+    
+    .status-button.confirmed.active {
+        background-color: #4caf50;
+        color: white;
+    }
+    
+    .status-button.preparing {
+        background-color: #e3f2fd;
+        color: #2196f3;
+        border-color: #bbdefb;
+    }
+    
+    .status-button.preparing:hover {
+        background-color: #bbdefb;
+    }
+    
+    .status-button.preparing.active {
+        background-color: #2196f3;
+        color: white;
+    }
+    
+    .status-button.ready {
+        background-color: #e0f5fe;
+        color: #03a9f4;
+        border-color: #cceefb;
+    }
+    
+    .status-button.ready:hover {
+        background-color: #cceefb;
+    }
+    
+    .status-button.ready.active {
+        background-color: #03a9f4;
+        color: white;
+    }
+    
+    .status-button.delivered {
+        background-color: #deffee;
+        color: #00c853;
+        border-color: #c2f2d6;
+    }
+    
+    .status-button.delivered:hover {
+        background-color: #c2f2d6;
+    }
+    
+    .status-button.delivered.active {
+        background-color: #00c853;
+        color: white;
+    }
+    
+    .status-button.cancelled {
+        background-color: #ffeaee;
+        color: #f44336;
+        border-color: #ffd6dc;
+    }
+    
+    .status-button.cancelled:hover {
+        background-color: #ffd6dc;
+    }
+    
+    .status-button.cancelled.active {
+        background-color: #f44336;
+        color: white;
+    }
+    
+    .order-summary {
+        background: linear-gradient(135deg, #6e8efb 0%, #4a6cf7 100%);
+        color: white;
+        padding: 0;
+    }
+    
+    .order-summary .order-header {
+        background-color: rgba(255, 255, 255, 0.1);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .order-summary .order-header h5 {
+        color: white;
+    }
+    
+    .summary-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .summary-item:last-child {
+        border-bottom: none;
+    }
+    
+    .summary-label {
+        font-weight: 500;
+        opacity: 0.9;
+    }
+    
+    .summary-value {
+        font-weight: 700;
+    }
+    
+    .total-row {
+        font-size: 1.2rem;
+        padding-top: 15px;
+        margin-top: 15px;
+        border-top: 2px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+    }
+    
+    .action-button {
+        flex: 1;
+        padding: 12px;
+        border-radius: 10px;
+        text-align: center;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: all 0.2s ease;
+    }
+    
+    .action-button i {
+        font-size: 1.2rem;
+    }
+    
+    .action-button.edit {
+        background-color: #ffeccc;
+        color: #ff9800;
+    }
+    
+    .action-button.edit:hover {
+        background-color: #ffd780;
+    }
+    
+    .action-button.payment {
+        background-color: #c2f2d6;
+        color: #00c853;
+    }
+    
+    .action-button.payment:hover {
+        background-color: #90e0b1;
+    }
+    
+    .order-items-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+    
+    .order-items-table th {
+        padding: 12px 15px;
+        background-color: #f8f9fa;
+        font-weight: 600;
+        color: #344767;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    
+    .order-items-table td {
+        padding: 12px 15px;
+        vertical-align: middle;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    
+    .order-items-table tr:last-child td {
+        border-bottom: none;
+    }
+    
+    .order-note {
+        background-color: #fffbeb;
+        padding: 15px;
+        border-radius: 10px;
+        border-right: 4px solid #fbbf24;
+    }
+    
+    .customer-info {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    
+    .customer-avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background-color: #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: #6e8efb;
+        margin-left: 15px;
+    }
+    
+    .customer-details {
+        flex: 1;
+    }
+    
+    .customer-name {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 0;
+    }
+    
+    .customer-meta {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+    
+    .payment-status {
+        padding: 8px 12px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        display: inline-block;
+    }
+    
+    .payment-status.paid {
+        background-color: #d1fae5;
+        color: #059669;
+    }
+    
+    .payment-status.partial {
+        background-color: #fff7cd;
+        color: #b45309;
+    }
+    
+    .payment-status.unpaid {
+        background-color: #fee2e2;
+        color: #dc2626;
+    }
+    
+    .payment-history-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    
+    .payment-history-item:last-child {
+        border-bottom: none;
+    }
+    
+    .payment-info {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .payment-amount {
+        font-weight: 700;
+        font-size: 1.1rem;
+    }
+    
+    .payment-meta {
+        color: #6c757d;
+        font-size: 0.85rem;
+    }
+    
+    .payment-method {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 10px;
+        background-color: #f8f9fa;
+        border-radius: 6px;
+        font-size: 0.85rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="order-dashboard">
+    <div class="order-main">
+        <!-- Customer and Basic Info -->
+        <div class="card order-card">
+            <div class="order-header">
+                <h5>Order Information</h5>
+                <div class="btn-group">
+                    <a href="{% url 'orders:management_order_edit' order.id %}" class="btn btn-sm btn-outline-warning">
+                        <i class="fas fa-edit me-1"></i> Edit
+                    </a>
+                </div>
+            </div>
+            <div class="order-body">
+                <div class="customer-info">
+                    <div class="customer-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="customer-details">
+                        <h5 class="customer-name">{{ order.customer }}</h5>
+                        <div class="customer-meta">
+                            <span><i class="fas fa-calendar me-1"></i> {{ order.created_at|date:"Y/m/d H:i" }}</span>
+                            <span class="mx-2">|</span>
+                            <span><i class="fas fa-table me-1"></i> Table {{ order.table }}</span>
+                        </div>
+                    </div>
+                    <div>
+                        <span class="payment-status {% if order.payment_status == 'paid' %}paid{% elif order.payment_status == 'partial' %}partial{% else %}unpaid{% endif %}">
+                            {% for code, name in order.PAYMENT_STATUS_CHOICES %}
+                                {% if code == order.payment_status %}{{ name }}{% endif %}
+                            {% endfor %}
+                        </span>
+                    </div>
+                </div>
+
+                {% if order.notes %}
+                <div class="order-note">
+                    <h6><i class="fas fa-sticky-note me-1"></i> Notes:</h6>
+                    {{ order.notes|linebreaks }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Order Items -->
+        <div class="card order-card">
+            <div class="order-header">
+                <h5>Order Items</h5>
+                <span class="badge bg-primary">{{ order_items|length }} Items</span>
+            </div>
+            <div class="order-body">
+                <div class="table-responsive">
+                    <table class="order-items-table">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Quantity</th>
+                                <th>Unit Price</th>
+                                <th>Total Price</th>
+                                <th>Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in order_items %}
+                            <tr>
+                                <td>
+                                    <strong>{{ item.product.name }}</strong>
+                                </td>
+                                <td>{{ item.quantity }}</td>
+                                <td>{{ item.price|intcomma:False }} USD</td>
+                                <td><strong>{{ item.total_price|intcomma:False }} USD</strong></td>
+                                <td>{{ item.notes|default:"-" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center p-4">No items in this order</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment History -->
+        <div class="card order-card">
+            <div class="order-header">
+                <h5>Payment History</h5>
+                <a href="{% url 'orders:management_payment_add' order.id %}" class="btn btn-sm btn-success">
+                    <i class="fas fa-plus me-1"></i> New Payment
+                </a>
+            </div>
+            <div class="order-body">
+                {% if payments %}
+                <div>
+                    {% for payment in payments %}
+                    <div class="payment-history-item">
+                        <div class="payment-info">
+                            <div class="payment-amount">{{ payment.amount|intcomma:False }} USD</div>
+                            <div class="payment-meta">
+                                <span><i class="far fa-clock me-1"></i> {{ payment.created_at|date:"Y/m/d H:i" }}</span>
+                                {% if payment.transaction_id %}
+                                <span class="mx-2">|</span>
+                                <span><i class="fas fa-hashtag me-1"></i> {{ payment.transaction_id }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="payment-method">
+                                <i class="fas {% if payment.payment_method == 'cash' %}fa-money-bill{% elif payment.payment_method == 'card' %}fa-credit-card{% else %}fa-exchange-alt{% endif %} me-1"></i>
+                                {% for code, name in payment.PAYMENT_METHODS %}
+                                    {% if code == payment.payment_method %}{{ name }}{% endif %}
+                                {% endfor %}
+                            </div>
+                            <span class="badge {% if payment.status == 'completed' %}bg-success{% elif payment.status == 'pending' %}bg-warning{% else %}bg-danger{% endif %}">
+                                {% for code, name in payment.STATUS_CHOICES %}
+                                    {% if code == payment.status %}{{ name }}{% endif %}
+                                {% endfor %}
+                            </span>
+                            <a href="{% url 'orders:management_payment_detail' payment.id %}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <div class="mb-3 text-muted">
+                        <i class="fas fa-money-bill-wave fa-3x"></i>
+                    </div>
+                    <p>No payments recorded</p>
+                    <a href="{% url 'orders:management_payment_add' order.id %}" class="btn btn-success">
+                        <i class="fas fa-plus me-1"></i> Record New Payment
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="order-sidebar">
+        <!-- Order Status Change -->
+        <div class="card order-card mb-4">
+            <div class="order-header">
+                <h5>Order Status</h5>
+            </div>
+            <div class="order-body">
+                <div class="status-controls">
+                    <div class="mb-3 text-center">
+                        <span class="badge fs-6 {% if order.status == 'cancelled' %}bg-danger
+                                           {% elif order.status == 'delivered' %}bg-success
+                                           {% elif order.status == 'ready' %}bg-info
+                                           {% elif order.status == 'confirmed' %}bg-success
+                                           {% elif order.status == 'preparing' %}bg-primary
+                                           {% else %}bg-warning{% endif %} p-2">
+                            {% for code, name in status_choices %}
+                                {% if code == order.status %}{{ name }}{% endif %}
+                            {% endfor %}
+                        </span>
+                    </div>
+                    <form method="post" action="{% url 'orders:management_order_update_status' order.id %}" id="status-form">
+                        {% csrf_token %}
+                        <input type="hidden" id="status-input" name="status" value="{{ order.status }}">
+                        
+                        <div class="status-buttons">
+                            {% for code, name in status_choices %}
+                            <div class="status-button {{ code }} {% if order.status == code %}active{% endif %}" data-status="{{ code }}">
+                                <i class="fas {% if code == 'pending' %}fa-clock
+                                           {% elif code == 'confirmed' %}fa-clipboard-check
+                                           {% elif code == 'preparing' %}fa-blender
+                                           {% elif code == 'ready' %}fa-check-circle
+                                           {% elif code == 'delivered' %}fa-truck
+                                           {% elif code == 'cancelled' %}fa-times-circle
+                                           {% else %}fa-circle
+                                           {% endif %}"></i>
+                                {{ name }}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100 mt-4">Update Status</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="card order-card order-summary">
+            <div class="order-header">
+                <h5>Financial Summary</h5>
+                <span class="badge bg-white text-primary">#{{ order.order_number }}</span>
+            </div>
+            <div class="order-body">
+                <div class="summary-item">
+                    <div class="summary-label">Total Amount:</div>
+                    <div class="summary-value">{{ order.total_amount|intcomma:False }} USD</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-label">Discount:</div>
+                    <div class="summary-value">{{ order.discount_amount|intcomma:False }} USD</div>
+                </div>
+                <div class="summary-item total-row">
+                    <div class="summary-label">Final Amount:</div>
+                    <div class="summary-value">{{ order.final_amount|intcomma:False }} USD</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-label">Remaining Amount:</div>
+                    <div class="summary-value">{{ order.remaining_amount|intcomma:False }} USD</div>
+                </div>
+                
+                <div class="action-buttons">
+                    <a href="{% url 'orders:management_order_edit' order.id %}" class="action-button edit">
+                        <i class="fas fa-edit"></i>
+                        Edit
+                    </a>
+                    <a href="{% url 'orders:management_payment_add' order.id %}" class="action-button payment">
+                        <i class="fas fa-money-bill"></i>
+                        Payment
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Status buttons
+        const statusButtons = document.querySelectorAll('.status-button');
+        const statusInput = document.getElementById('status-input');
+        
+        statusButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Remove active class from all buttons
+                statusButtons.forEach(btn => btn.classList.remove('active'));
+                
+                // Add active class to clicked button
+                this.classList.add('active');
+                
+                // Update the hidden input value
+                statusInput.value = this.dataset.status;
+            });
+        });
+    });
+</script>
+{% endblock %} 

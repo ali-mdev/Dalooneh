@@ -1,0 +1,989 @@
+{% extends 'index.html'%}
+{% load static %}
+{% load humanize %}
+{% load price_filters %}
+{% block content %}
+
+<!-- Add Font Awesome CDN -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<!-- Category Images Alignment Fix -->
+<style>
+    /* Fix for category images alignment */
+    .wrap-categories .categories-item .box-img {
+        height: 120px !important; /* larger for better visibility */
+        width: 100% !important;
+        aspect-ratio: 1 !important;
+        border-radius: 16px !important;
+        box-shadow: 0px 8px 10px 0px rgba(0, 0, 0, 0.1) !important;
+        overflow: hidden !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+    
+    .wrap-categories .categories-item .box-img img {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover !important;
+        border-radius: 0 !important;
+        max-width: 100% !important;
+        max-height: 100% !important;
+    }
+    
+    /* Ensure consistent grid layout */
+    .wrap-categories {
+        display: grid !important;
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 15px !important;
+    }
+    
+    .wrap-categories .categories-item {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+    }
+    
+    /* Readable category text (desktop/tablet) */
+    .wrap-categories .categories-item .content p {
+        font-size: 15px !important;
+        line-height: 1.3 !important;
+        font-weight: 600 !important;
+        text-align: center !important;
+    }
+    .wrap-categories .categories-item .content span {
+        font-size: 13px !important;
+    }
+    
+    /* Fix for category section spacing from header */
+    .section:first-of-type {
+        margin-top: 80px !important;
+    }
+    
+    /* Ensure adequate space between header and categories */
+    .categories-section {
+        padding-top: 40px !important;
+        margin-top: 20px !important;
+    }
+    
+    /* Mobile responsive - 3 columns instead of 4 */
+    @media (max-width: 768px) {
+        .wrap-categories {
+            grid-template-columns: repeat(3, 1fr) !important;
+            gap: 12px !important;
+        }
+        
+        .wrap-categories .categories-item .box-img {
+            height: 100px !important; /* mobile standard */
+            width: 100% !important;
+        }
+        
+        .wrap-categories .categories-item .content p {
+            font-size: 13px !important;
+            line-height: 1.25 !important;
+        }
+        
+        .wrap-categories .categories-item .content span {
+            font-size: 12px !important;
+        }
+    }
+    
+    /* Extra small mobile devices */
+    @media (max-width: 480px) {
+        .wrap-categories {
+            gap: 10px !important;
+        }
+        
+        .wrap-categories .categories-item .box-img {
+            height: 90px !important; /* small phones */
+        }
+        
+        .wrap-categories .categories-item .content {
+            padding: 8px 10px 0px !important;
+        }
+        
+        .wrap-categories .categories-item .content p {
+            font-size: 12px !important;
+        }
+        
+        .wrap-categories .categories-item .content span {
+            font-size: 11px !important;
+        }
+    }
+</style>
+
+<br><br><br><br>
+
+<div class="section recomand-sec">
+    <div class="tf-container">
+        <div class="wrap-swiper">
+            <div class="swiper recomand-swiper">
+                <div class="swiper-wrapper pb-30 pt-20">
+                    <div class="swiper-slide ml-2">
+                        <div class="recomand-box">
+                            <div class="img-box">
+                                <a class="bg">
+                                    <img src="{% static 'images/food/recomand1.jpg' %}" alt="Image">
+                                </a>
+                                <a class="logo">
+                                    <img src="{% static 'images/food/recomand-logo.png' %}" alt="Logo">
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="swiper-slide">
+                        <div class="recomand-box">
+                            <div class="img-box">
+                                <a href="product-details-2.html" class="bg">
+                                    <img src="{% static 'images/food/recomand2.jpg' %}" alt="Image">
+                                </a>
+                                <a href="product-details-2.html" class="logo">
+                                    <img src="{% static 'images/food/recomand-logo.png' %}" alt="Logo">
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="swiper-slide">
+                        <div class="recomand-box">
+                            <div class="img-box">
+                                <a href="product-details-3.html" class="bg">
+                                    <img src="{% static 'images/food/recomand3.jpg' %}" alt="Image">
+                                </a>
+                                <a href="product-details-3.html" class="logo">
+                                    <img src="{% static 'images/food/recomand-logo.png' %}" alt="Logo">
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="section categories-section" style="margin-top: 60px;">
+    <div class="tf-container">
+        <h2 class="mb-12">Categories</h2>
+        <ul class="wrap-categories">
+            {% for category in categories %}
+            <li class="categories-item">
+                <a href="{% url 'menu:category_detail' category.slug %}">
+                    <div class="box-img">
+                        {% if category.image %}
+                        <img src="{{ category.image.url }}" alt="{{ category.name }}">
+                        {% else %}
+                        <img src="{% static 'images/food/cate-1.jpg' %}" alt="{{ category.name }}">
+                        {% endif %}
+                    </div>
+                    <div class="content">
+                        <p>{{ category.name }}</p>
+                        <span>{{ category.products.count }}</span>
+                    </div>
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+
+<div class="section mt-22">
+    <div class="tf-container">
+        <div class="title-bar">
+            <h2>Most Popular</h2>
+        </div>
+        <div class="wrap-swiper">
+            <div class="swiper drink-swiper">
+                <div class="swiper-wrapper pb-30 pt-12">
+                    {% for product in popular_products %}
+                    <div class="swiper-slide {% if forloop.first %}ml-2{% endif %}">
+                        <div class="tf-box-column lg">
+                            <div class="img-box">
+                                {% if product.image %}
+                                <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                                {% else %}
+                                <img src="{% static 'images/food/coffea-lg-1.jpg' %}" alt="{{ product.name }}">
+                                {% endif %}
+                            </div>
+                            <div class="content-box">
+                                <h3>{{ product.name }}</h3>
+                                <div class="product-description-box tooltip-trigger" data-description="{{ product.description }}" data-product-name="{{ product.name }}">
+                                    <p class="product-description">{{ product.description|truncatechars:13 }}</p>
+                                </div>
+                                <ul class="review">
+                            
+                                    <li class="dot-icon">
+                                    </li>
+                                    <li>{{ product.preparation_time }} minutes</li>
+                                </ul>
+                                <div class="product-actions">
+                                    <div class="product-price">{{ product.price|price_in_thousand }}</div>
+                                    <form class="add-to-cart-form" data-product-id="{{ product.id }}">
+                                        <input type="hidden" id="qty-{{ product.id }}" value="1">
+                                        <button type="submit" class="add-to-cart-button">
+                                            <span class="cart-icon">🛒</span>
+                                            <span class="cart-text">Buy</span>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="swiper-slide ml-2">
+                        <div class="tf-box-column lg">
+                            <div class="content-box">
+                                <p>No popular products found.</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="section mt-40">
+    <div class="tf-container">
+        <div class="title-bar">
+            <h2>Collections</h2>
+
+        </div>
+        <div class="wrap-swiper">
+            <div class="swiper drink-swiper">
+                <div class="swiper-wrapper pb-30 pt-12">
+                    {% for category in categories %}
+                    <div class="swiper-slide {% if forloop.first %}ml-2{% endif %}">
+                        <div class="box-collections">
+                            <div class="images">
+                                <a href="{% url 'menu:category_detail' category.slug %}">
+                                    {% if category.image %}
+                                    <img src="{{ category.image.url }}" alt="{{ category.name }}">
+                                    {% else %}
+                                    <img src="{% static 'images/food/collect-1.jpg' %}" alt="{{ category.name }}">
+                                    {% endif %}
+                                </a>
+                            </div>
+                            <div class="content">
+                                <h3>
+                                    <a href="{% url 'menu:category_detail' category.slug %}">{{ category.name }}</a>
+                                </h3>
+                                <p>{{ category.products.count }} products</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<br><br><br><br><br>
+
+<!-- Phone Number Modal - iOS Style -->
+<style>
+    /* Consistent image sizing for Most Popular slider */
+    .section.mt-22 .tf-box-column.lg .img-box {
+        width: 100%;
+        aspect-ratio: 4 / 3;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .section.mt-22 .tf-box-column.lg .img-box img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    @media (max-width: 768px) {
+        .section.mt-22 .tf-box-column.lg .img-box {
+            aspect-ratio: 1 / 1;
+        }
+    }
+
+    /* Highly visible Add to Cart Button */
+    .product-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-top: 12px;
+    }
+    
+    .product-price {
+        font-weight: 700;
+        font-size: 17px;
+        color: #333;
+    }
+    
+    .add-to-cart-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        width: 100%;
+        background-color: #033F38;
+        color: white;
+        font-weight: 600;
+        font-size: 15px;
+        padding: 10px 12px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s;
+        box-shadow: 0 2px 8px rgba(3, 63, 56, 0.3);
+    }
+    
+    .add-to-cart-button:hover {
+        background-color: #044e45;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(3, 63, 56, 0.4);
+        color: white;
+    }
+    
+    .add-to-cart-button:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 4px rgba(229, 62, 62, 0.2);
+    }
+    
+    .cart-icon {
+        font-size: 18px;
+        line-height: 1;
+    }
+    
+    .cart-text {
+        font-size: 15px;
+    }
+    
+    .add-to-cart-button.loading {
+        background-color: #033F38;
+        color: transparent;
+        position: relative;
+        pointer-events: none;
+    }
+    
+    .add-to-cart-button.loading:after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 20px;
+        height: 20px;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        border-top-color: white;
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        animation: spin 0.8s linear infinite;
+    }
+    
+    @keyframes spin {
+        to {
+            transform: translate(-50%, -50%) rotate(360deg);
+        }
+    }
+    
+    .add-to-cart-button.success {
+        background-color: #38a169;
+        box-shadow: 0 2px 8px rgba(56, 161, 105, 0.3);
+    }
+    
+    /* Responsive styles */
+    @media (max-width: 767px) {
+        .product-price {
+            font-size: 16px;
+        }
+        
+        .add-to-cart-button {
+            padding: 8px 10px;
+            font-size: 14px;
+        }
+        
+        .cart-icon {
+            font-size: 16px;
+        }
+    }
+    
+    .ios-modal .modal-content {
+        background: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-radius: 18px;
+        border: none;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    }
+    
+    .ios-modal .modal-header {
+        border-bottom: none;
+        padding: 20px 20px 10px;
+        position: relative;
+    }
+    
+    .ios-modal .modal-title {
+        font-size: 18px;
+        font-weight: 600;
+        text-align: center;
+        width: 100%;
+    }
+    
+    .ios-modal .modal-body {
+        padding: 0 20px 25px;
+        text-align: center;
+    }
+    
+    .ios-modal .phone-icon {
+        width: 70px;
+        height: 70px;
+        margin: 0 auto 15px;
+        border-radius: 20px;
+        background: linear-gradient(135deg, #8b5cf6, #ec4899);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 28px;
+        box-shadow: 0 8px 15px rgba(139, 92, 246, 0.25);
+    }
+    
+    .ios-modal p {
+        color: #555;
+        font-size: 14px;
+        margin-bottom: 20px;
+        line-height: 1.5;
+    }
+    
+    .ios-modal .form-group {
+        position: relative;
+        margin-bottom: 20px;
+    }
+    
+    .ios-modal .form-control {
+        border-radius: 12px;
+        padding: 14px 15px;
+        background-color: rgba(240, 240, 245, 0.8);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        font-size: 15px;
+        height: auto;
+        transition: all 0.3s;
+        text-align: left;
+    }
+    
+    .ios-modal .form-control:focus {
+        background-color: #fff;
+        box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+        border-color: #8b5cf6;
+    }
+    
+    .ios-modal .form-label {
+        position: absolute;
+        left: 15px;
+        top: 14px;
+        font-size: 15px;
+        color: #777;
+        transition: all 0.2s;
+        pointer-events: none;
+    }
+    
+    .ios-modal .form-control:focus + .form-label,
+    .ios-modal .form-control:not(:placeholder-shown) + .form-label {
+        transform: translateY(-24px) scale(0.85);
+        color: #8b5cf6;
+    }
+    
+    .ios-modal .invalid-feedback {
+        text-align: left;
+        font-size: 12px;
+        color: #ef4444;
+    }
+    
+    .ios-modal .btn-submit {
+        border-radius: 12px;
+        padding: 12px;
+        font-size: 15px;
+        font-weight: 600;
+        background: linear-gradient(135deg, #8b5cf6, #6366f1);
+        border: none;
+        color: white;
+        width: 100%;
+        transition: all 0.3s;
+    }
+    
+    .ios-modal .btn-submit:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(139, 92, 246, 0.25);
+    }
+    
+    .ios-modal .btn-submit.loading {
+        color: transparent;
+        position: relative;
+    }
+    
+    .ios-modal .btn-submit.loading:after {
+        content: "";
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        border: 2px solid rgba(255, 255, 255, 0.25);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: button-loading-spinner 0.8s linear infinite;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+    }
+    
+    @keyframes button-loading-spinner {
+        from {
+            transform: translate(-50%, -50%) rotate(0turn);
+        }
+        to {
+            transform: translate(-50%, -50%) rotate(1turn);
+        }
+    }
+    
+    /* Responsive styles */
+    @media (max-width: 576px) {
+        .ios-modal .modal-dialog {
+            margin: 10px auto;
+            max-width: 92%;
+        }
+        
+        .ios-modal .phone-icon {
+            width: 60px;
+            height: 60px;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        
+        .ios-modal .modal-title {
+            font-size: 16px;
+        }
+        
+        .ios-modal p {
+            font-size: 13px;
+            margin-bottom: 15px;
+        }
+        
+        .ios-modal .form-control {
+            padding: 12px 14px;
+            font-size: 14px;
+        }
+        
+        .ios-modal .form-label {
+            font-size: 14px;
+            top: 12px;
+        }
+        
+        .ios-modal .btn-submit {
+            padding: 10px;
+            font-size: 14px;
+        }
+    }
+
+    /* Product description style */
+    .product-description {
+        font-size: 0.85rem;
+        color: #666;
+        margin-bottom: 8px;
+        line-height: 1.4;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* Product description style */
+    .product-description-box {
+        background-color: #fff7e6;
+        border-right: 4px solid #ff9800;
+        padding: 8px 10px;
+        margin: 5px 0 10px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        position: relative;
+        cursor: pointer;
+    }
+
+    .product-description {
+        font-size: 0.85rem;
+        color: #333;
+        margin: 0;
+        line-height: 1.4;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-weight: 500;
+    }
+
+    @media (max-width: 768px) {
+        .product-description-box {
+            padding: 6px 8px;
+            margin: 4px 0 8px;
+        }
+        
+        .product-description {
+            font-size: 0.8rem;
+            -webkit-line-clamp: 1;
+            line-clamp: 1;
+            line-height: 1.3;
+        }
+    }
+
+    /* Tooltip styles */
+    .tooltip-trigger {
+        position: relative;
+        cursor: pointer;
+    }
+    
+    .tooltip-icon {
+        position: absolute;
+        right: 8px;
+        top: 8px;
+        color: #ff9800;
+        font-size: 16px;
+    }
+    
+    .tooltip-content {
+        display: none;
+        position: absolute;
+        z-index: 1000;
+        bottom: 125%;
+        left: 50%;
+        width: 300px;
+        max-width: 90vw;
+        transform: translateX(-50%);
+        padding: 0;
+        color: #333;
+        text-align: right;
+        font-size: 14px;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        transition: opacity 0.3s;
+    }
+    
+    #description-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.45);
+        z-index: 2000;
+        justify-content: center;
+        align-items: center;
+        backdrop-filter: blur(3px);
+        -webkit-backdrop-filter: blur(3px);
+    }
+    
+    #description-modal-content {
+        background-color: white;
+        width: 320px;
+        max-width: 85%;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        overflow: hidden;
+        animation: modalAppear 0.25s ease;
+        text-align: right;
+        position: relative;
+        padding: 0;
+    }
+    
+    #description-modal-close {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        width: 24px;
+        height: 24px;
+        background: rgba(0, 0, 0, 0.1);
+        border: none;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        color: #333;
+        cursor: pointer;
+        z-index: 5;
+        line-height: 1;
+        padding: 0;
+    }
+    
+    #description-modal-title {
+        font-weight: 700;
+        margin: 0;
+        font-size: 17px;
+        color: #033F38;
+        padding: 16px 16px 0;
+        text-align: right;
+    }
+    
+    #description-modal-body {
+        padding: 12px 16px 16px;
+        line-height: 1.6;
+        font-size: 14px;
+        color: #333;
+        max-height: 60vh;
+        overflow-y: auto;
+    }
+    
+    @keyframes modalAppear {
+        from {
+            opacity: 0;
+            transform: translateY(15px) scale(0.95);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+    
+    @media (max-width: 768px) {
+        #description-modal-content {
+            width: 300px;
+        }
+        
+        #description-modal-body {
+            max-height: 50vh;
+            padding: 12px 16px 16px;
+            font-size: 13px;
+        }
+        
+        #description-modal-title {
+            font-size: 16px;
+        }
+    }
+</style>
+
+<div class="modal fade ios-modal" id="phoneNumberModal" tabindex="-1" aria-labelledby="phoneNumberModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="phoneNumberModalLabel">Enter Phone Number</h5>
+            </div>
+            <div class="modal-body">
+                <div class="phone-icon">
+                    <i class="fas fa-phone-alt"></i>
+                </div>
+                <p>For better service and to use discounts, please enter your phone number</p>
+                
+                <form id="phoneNumberForm">
+                    <div class="form-group position-relative">
+                        <input type="tel" class="form-control" id="phoneNumberInput" name="phone_number" 
+                               placeholder=" " pattern="[0-9]{11}" maxlength="11" required>
+                        <label for="phoneNumberInput" class="form-label">Mobile Number</label>
+                        <div class="invalid-feedback" id="phoneNumberError"></div>
+                    </div>
+                    <button type="submit" class="btn btn-submit" id="phoneSubmitBtn">Submit Number</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="description-modal">
+    <div id="description-modal-content">
+        <button id="description-modal-close">×</button>
+        <h5 id="description-modal-title">Product Description</h5>
+        <div id="description-modal-body"></div>
+    </div>
+</div>
+
+<!-- Script configuration for phone modal -->
+<div id="phone-modal-config"
+     data-show-phone-modal="{{ show_phone_modal|yesno:'true,false' }}"
+     data-submit-phone-url="{% url 'customers:submit_phone_number' %}"></div>
+<script>
+    (function(){
+        var cfg = document.getElementById('phone-modal-config');
+        window.showPhoneModal = cfg && cfg.dataset.showPhoneModal === 'true';
+        window.submitPhoneUrl = (cfg && cfg.dataset.submitPhoneUrl) || '';
+    })();
+    
+</script>
+<script src="{% static 'js/ios-messagebox.js' %}"></script>
+<script src="{% static 'js/phone-modal.js' %}"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Create modal elements
+        const descriptionModal = document.getElementById('description-modal');
+        const descriptionModalBody = document.getElementById('description-modal-body');
+        const descriptionModalTitle = document.getElementById('description-modal-title');
+        const descriptionModalClose = document.getElementById('description-modal-close');
+        
+        // Close modal when X is clicked
+        descriptionModalClose.addEventListener('click', function() {
+            descriptionModal.style.display = 'none';
+        });
+        
+        // Close modal when clicking outside modal content
+        descriptionModal.addEventListener('click', function(e) {
+            if (e.target === descriptionModal) {
+                descriptionModal.style.display = 'none';
+            }
+        });
+        
+        // Show description in modal when tooltip trigger is clicked
+        document.querySelectorAll('.tooltip-trigger').forEach(trigger => {
+            trigger.addEventListener('click', function() {
+                const description = this.getAttribute('data-description');
+                const productName = this.getAttribute('data-product-name');
+                
+                if (description) {
+                    // Update modal title with product name if available
+                    if (productName) {
+                        descriptionModalTitle.textContent = productName;
+                    } else {
+                        descriptionModalTitle.textContent = 'Product Description';
+                    }
+                    
+                    descriptionModalBody.textContent = description;
+                    descriptionModal.style.display = 'flex';
+                }
+            });
+        });
+        
+        // Tooltip functionality for mobile
+        document.querySelectorAll('.tooltip-trigger').forEach(trigger => {
+            trigger.addEventListener('click', function(e) {
+                // Close all other open tooltips
+                document.querySelectorAll('.tooltip-open').forEach(el => {
+                    if (el !== trigger) {
+                        el.classList.remove('tooltip-open');
+                    }
+                });
+                
+                // Toggle tooltip
+                this.classList.toggle('tooltip-open');
+                
+                // Stop propagation to prevent document click handler from immediately closing it
+                e.stopPropagation();
+            });
+            
+            // Prevent tooltip from appearing on parent click
+            const tooltipContent = trigger.querySelector('.tooltip-content');
+            if (tooltipContent) {
+                tooltipContent.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            }
+        });
+        
+        // Close tooltips when clicking elsewhere on the document
+        document.addEventListener('click', function() {
+            document.querySelectorAll('.tooltip-open').forEach(el => {
+                el.classList.remove('tooltip-open');
+            });
+        });
+    
+        // Handle add to cart forms
+        document.querySelectorAll('.add-to-cart-form').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const productId = this.getAttribute('data-product-id');
+                const quantity = document.getElementById('qty-' + productId).value;
+                const submitBtn = this.querySelector('.add-to-cart-button');
+                
+                // Disable the submit button during the request
+                submitBtn.disabled = true;
+                submitBtn.classList.add('loading');
+                
+                // Get the CSRF token from the cookie
+                function getCookie(name) {
+                    let cookieValue = null;
+                    if (document.cookie && document.cookie !== '') {
+                        const cookies = document.cookie.split(';');
+                        for (let i = 0; i < cookies.length; i++) {
+                            const cookie = cookies[i].trim();
+                            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                                break;
+                            }
+                        }
+                    }
+                    return cookieValue;
+                }
+                
+                const csrftoken = getCookie('csrftoken');
+                
+                // Prepare form data
+                const formData = new FormData();
+                formData.append('product_id', productId);
+                formData.append('quantity', quantity);
+                
+                // Make the AJAX request
+                fetch('/tables/add-to-cart/', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrftoken,
+                    },
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Show success animation on button
+                        submitBtn.classList.remove('loading');
+                        submitBtn.classList.add('success');
+                        submitBtn.innerHTML = '<span class="cart-icon">✓</span><span class="cart-text">Added</span>';
+                        
+                        // After small delay, show success message
+                        setTimeout(() => {
+                            showIOSMessagebox({
+                                title: 'Dalooneh',
+                                message: 'Product added to cart',
+                                buttons: [
+                                    {
+                                        text: 'Continue Shopping',
+                                        onClick: function() {
+                                            // Remove success class after dialog closes
+                                            submitBtn.classList.remove('success');
+                                            // Restore original button content
+                                            submitBtn.innerHTML = '<span class="cart-icon">🛒</span><span class="cart-text">Buy</span>';
+                                        }
+                                    },
+                                    {
+                                        text: 'View Cart',
+                                        onClick: function() {
+                                            window.location.href = "{% url 'tables:view_cart' %}";
+                                        }
+                                    }
+                                ]
+                            });
+                        }, 500);
+                        
+                        // Dispatch cartUpdated event
+                        document.dispatchEvent(new CustomEvent('cartUpdated', {
+                            detail: { cartCount: data.cart_count }
+                        }));
+                    } else {
+                        // Show error message with iOS style messagebox
+                        showErrorMessage(data.message || 'Sorry, unable to add to cart');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showErrorMessage('An error occurred while connecting to the server. Please try again');
+                })
+                .finally(() => {
+                    // Re-enable the button (except for success case which is handled separately)
+                    if (!submitBtn.classList.contains('success')) {
+                        submitBtn.disabled = false;
+                        submitBtn.classList.remove('loading');
+                    }
+                });
+            });
+        });
+    });
+</script>
+
+{% endblock %}

@@ -1,0 +1,9 @@
+{% extends "admin/change_form.html" %}
+{% load i18n admin_urls %}
+
+{% block object-tools-items %}
+    <li>
+        <a href="{% url 'admin:orders_order_changelist' %}?customer__phone_number={{ original.phone_number }}" class="viewlink">View this customer's orders</a>
+    </li>
+    {{ block.super }}
+{% endblock %} 

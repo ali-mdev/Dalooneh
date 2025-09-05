@@ -1,0 +1,80 @@
+{% extends 'orders/management/base.html' %}
+{% load humanize %}
+
+{% block title %}Add New Payment{% endblock %}
+
+{% block page_title %}Add New Payment for Order #{{ order.order_number }}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Add New Payment</h5>
+    </div>
+    <div class="card-body">
+        <form method="post" action="{% url 'orders:management_payment_add' order.id %}">
+            {% csrf_token %}
+            
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <div class="card bg-light">
+                        <div class="card-header">
+                            <h6 class="mb-0">Order Information</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-3 mb-3">
+                                    <strong>Order Number:</strong>
+                                    <p>{{ order.order_number }}</p>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <strong>Customer:</strong>
+                                    <p>{{ order.customer }}</p>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <strong>Final Amount:</strong>
+                                    <p>{{ order.final_amount|intcomma:False }} USD</p>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <strong>Remaining Amount:</strong>
+                                    <p>{{ remaining_amount|intcomma:False }} USD</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="amount" class="form-label">Payment Amount (USD) <span class="text-danger">*</span></label>
+                    <input type="number" class="form-control" id="amount" name="amount" value="{{ order.final_amount }}" required>
+                    <div class="form-text">Enter the payment amount in USD.</div>
+                </div>
+                <div class="col-md-6">
+                    <label for="payment_method" class="form-label">Payment Method <span class="text-danger">*</span></label>
+                    <select class="form-select" id="payment_method" name="payment_method" required>
+                        {% for code, name in payment_methods %}
+                        <option value="{{ code }}" {% if code == 'card' %}selected{% endif %}>{{ name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            
+            <div class="row mb-3">
+                <div class="col-md-12">
+                    <label for="transaction_id" class="form-label">Transaction ID</label>
+                    <input type="text" class="form-control" id="transaction_id" name="transaction_id">
+                    <div class="form-text">Enter the transaction ID if available.</div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-12 text-end">
+                    <a href="{% url 'orders:management_order_detail' order.id %}" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-success">Record Payment</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %} 

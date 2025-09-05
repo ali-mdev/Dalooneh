@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Dalooneh Management Panel{% endblock %}</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Arial', 'Tahoma', sans-serif;
+            background-color: #f8f9fa;
+            overflow-x: hidden;
+        }
+        
+        /* Modern Sidebar */
+        .sidebar {
+            min-height: 100vh;
+            background: #0f172a;
+            color: #fff;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            position: relative;
+            z-index: 100;
+            overflow-y: auto;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar-header {
+            background: #ffffff;
+            padding: 1.5rem 1rem;
+            position: relative;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .sidebar-header img {
+            max-height: 90px !important;
+            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+        }
+        
+        .sidebar-header .small {
+            margin-top: 0.5rem;
+            color: #0f172a;
+            font-weight: 500;
+        }
+        
+        /* Navigation Links */
+        .sidebar-link {
+            color: rgba(255, 255, 255, 0.85);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            padding: 0.6rem 1.2rem;
+            margin: 3px 8px;
+            border-radius: 10px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            font-weight: 600;
+            font-size: 0.95rem;
+            letter-spacing: 0.3px;
+        }
+        
+        .sidebar-link::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 0;
+            background: linear-gradient(90deg, rgba(59, 130, 246, 0.2), transparent);
+            transition: width 0.3s ease;
+        }
+        
+        .sidebar-link i {
+            margin-right: 10px;
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            transition: all 0.25s ease;
+            color: rgba(255, 255, 255, 0.7);
+            position: relative;
+            z-index: 2;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+        }
+        
+        .sidebar-link:hover {
+            background-color: rgba(255, 255, 255, 0.12);
+            color: #fff;
+            transform: translateX(3px);
+        }
+        
+        .sidebar-link:hover::before {
+            width: 6px;
+        }
+        
+        .sidebar-link:hover i {
+            color: #60a5fa;
+            transform: scale(1.15);
+            background: rgba(96, 165, 250, 0.15);
+        }
+        
+        .sidebar-link.active {
+            background: rgba(59, 130, 246, 0.2);
+            color: #fff;
+            font-weight: 700;
+        }
+        
+        .sidebar-link.active::before {
+            width: 6px;
+            background: linear-gradient(180deg, #3b82f6, #60a5fa);
+        }
+        
+        .sidebar-link.active i {
+            color: #60a5fa;
+            background: rgba(96, 165, 250, 0.2);
+        }
+        
+        /* Section Titles */
+        .section-title {
+            padding: 0.7rem 1.2rem 0.2rem;
+            margin-top: 0.5rem;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: rgba(255, 255, 255, 0.5);
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+        }
+        
+        .section-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, rgba(255,255,255,0.15), transparent);
+            margin-left: 12px;
+        }
+        
+        /* Content Area */
+        .content {
+            padding: 1.8rem;
+            background-color: #f8f9fa;
+            transition: all 0.3s ease;
+        }
+        
+        /* Cards */
+        .card {
+            border: none;
+            box-shadow: 0 1px 20px rgba(0, 0, 0, 0.05);
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Card Icons */
+        .card-icon {
+            width: 60px !important;
+            height: 60px !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            background: rgba(59, 130, 246, 0.1);
+            margin: 0 auto 1rem !important;
+            transition: all 0.3s ease;
+        }
+        
+        .card-icon i {
+            font-size: 1.5rem !important;
+        }
+        
+        .card:hover .card-icon {
+            transform: scale(1.1) rotate(5deg);
+        }
+        
+        /* Buttons */
+        .btn {
+            border-radius: 8px;
+            padding: 0.6rem 1.2rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Notification bell styles */
+        .notification-bell {
+            position: relative;
+            width: 36px;
+            height: 36px;
+            background-color: rgba(40, 167, 69, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .notification-bell:hover {
+            background-color: rgba(40, 167, 69, 0.2);
+        }
+        
+        .notification-bell i {
+            font-size: 1.2rem;
+            color: #28a745;
+        }
+        
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: #dc3545;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Notifications dropdown positioning */
+        #notificationDropdown {
+            right: auto;
+            left: 0;
+        }
+        
+        /* Make the nested menu items within each section more compact */
+        .sidebar nav ul {
+            padding-left: 0;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 d-md-block sidebar p-0">
+                <div class="sidebar-header text-center">
+                    <div class="mb-2">
+                        <img src="{% static 'images/LOGO.png' %}" alt="Dalooneh" class="img-fluid" style="max-height: 60px;">
+                    </div>
+                    <div class="small">
+                        {% if request.user.is_authenticated %}
+                        <span>{{ request.user.get_full_name|default:request.user.username }}</span>
+                        <a href="{% url 'logout' %}" class="text-white ms-2" title="Logout">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                <nav>
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a href="{% url 'staff:management_index' %}" class="sidebar-link {% if request.resolver_match.url_name == 'management_index' %}active{% endif %}">
+                                <i class="fas fa-home me-2"></i> Main Dashboard
+                            </a>
+                        </li>
+
+                        <!-- Menu Management -->
+                        <li class="section-title">Menu</li>
+                        <li class="nav-item">
+                            <a href="{% url 'menu:management_dashboard' %}" class="sidebar-link {% if request.resolver_match.namespace == 'menu' and request.resolver_match.url_name == 'management_dashboard' %}active{% endif %}">
+                                <i class="fas fa-utensils me-2"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'menu:management_category_list' %}" class="sidebar-link {% if request.resolver_match.namespace == 'menu' and 'category' in request.resolver_match.url_name %}active{% endif %}">
+                                <i class="fas fa-tags me-2"></i> Categories
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'menu:management_product_list' %}" class="sidebar-link {% if request.resolver_match.namespace == 'menu' and 'product' in request.resolver_match.url_name %}active{% endif %}">
+                                <i class="fas fa-hamburger me-2"></i> Products
+                            </a>
+                        </li>
+
+                        <!-- Table Management -->
+                        <li class="section-title">Tables</li>
+                        <li class="nav-item">
+                            <a href="{% url 'tables:management_dashboard' %}" class="sidebar-link {% if request.resolver_match.namespace == 'tables' and request.resolver_match.url_name == 'management_dashboard' %}active{% endif %}">
+                                <i class="fas fa-border-all me-2"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'tables:management_table_list' %}" class="sidebar-link {% if request.resolver_match.namespace == 'tables' and 'table' in request.resolver_match.url_name %}active{% endif %}">
+                                <i class="fas fa-chair me-2"></i> Tables
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'tables:management_session_list' %}" class="sidebar-link {% if request.resolver_match.namespace == 'tables' and 'session' in request.resolver_match.url_name %}active{% endif %}">
+                                <i class="fas fa-clock me-2"></i> Sessions
+                            </a>
+                        </li>
+
+                        <!-- Orders Management -->
+                        <li class="section-title">Orders Management</li>
+                        <li class="nav-item">
+                            <a href="{% url 'orders:management_dashboard' %}" class="sidebar-link {% if request.resolver_match.namespace == 'orders' and request.resolver_match.url_name == 'management_dashboard' %}active{% endif %}">
+                                <i class="fas fa-tachometer-alt"></i> Orders Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'orders:management_quick_order' %}" class="sidebar-link {% if request.resolver_match.namespace == 'orders' and request.resolver_match.url_name == 'management_quick_order' %}active{% endif %}">
+                                <i class="fas fa-bolt"></i> Quick Order
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'orders:management_order_list' %}" class="sidebar-link {% if request.resolver_match.namespace == 'orders' and 'order' in request.resolver_match.url_name and 'quick' not in request.resolver_match.url_name %}active{% endif %}">
+                                <i class="fas fa-clipboard-list"></i> Orders List
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'orders:management_payment_list' %}" class="sidebar-link {% if request.resolver_match.namespace == 'orders' and 'payment' in request.resolver_match.url_name %}active{% endif %}">
+                                <i class="fas fa-money-bill-wave"></i> Payments
+                            </a>
+                        </li>
+
+                        <!-- Customers Management -->
+                        <li class="section-title">Customers</li>
+                        <li class="nav-item">
+                            <a href="{% url 'customers:management_dashboard' %}" class="sidebar-link {% if request.resolver_match.namespace == 'customers' and request.resolver_match.url_name == 'management_dashboard' %}active{% endif %}">
+                                <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'customers:management_customer_list' %}" class="sidebar-link {% if request.resolver_match.namespace == 'customers' and 'customer' in request.resolver_match.url_name %}active{% endif %}">
+                                <i class="fas fa-users me-2"></i> Customers
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'customers:management_discount_list' %}" class="sidebar-link {% if request.resolver_match.namespace == 'customers' and 'discount' in request.resolver_match.url_name %}active{% endif %}">
+                                <i class="fas fa-tag me-2"></i> Discounts
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'customers:management_rating_list' %}" class="sidebar-link {% if request.resolver_match.namespace == 'customers' and 'rating' in request.resolver_match.url_name %}active{% endif %}">
+                                <i class="fas fa-star me-2"></i> Ratings
+                            </a>
+                        </li>
+
+                        <!-- Other Links -->
+                        <li class="section-title">Others</li>
+                        <li class="nav-item">
+                            <a href="{% url 'admin:index' %}" class="sidebar-link">
+                                <i class="fas fa-cog me-2"></i> Admin Panel
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/" class="sidebar-link">
+                                <i class="fas fa-home me-2"></i> Home Page
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10 content">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h2>{% block page_title %}{% endblock %}</h2>
+                    <div class="btn-toolbar d-flex align-items-center">
+                        <!-- Notification bell element; actual markup included from notification_includes.html -->
+                        <div id="notificationBell" class="notification-bell me-3">
+                            <i class="fas fa-bell"></i>
+                            <span class="notification-badge d-none" id="notificationBadge">0</span>
+                            
+                            <!-- Notifications menu -->
+                            <div class="notification-dropdown" id="notificationDropdown">
+                                <div class="notification-dropdown-header">
+                                    <div class="notification-dropdown-title">Notifications</div>
+                                    <div class="notification-dropdown-actions">
+                                        <a href="#" id="markAllReadBtn">Mark all as read</a>
+                                    </div>
+                                </div>
+                                <div class="notification-dropdown-body" id="notificationList">
+                                    <div class="notification-empty">Loading...</div>
+                                </div>
+                            </div>
+                        </div>
+                        {% block toolbar_buttons %}{% endblock %}
+                    </div>
+                </div>
+
+                <!-- Messages -->
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                <!-- Main Content -->
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Include Notifications System -->
+    {% include 'notifications/notification_includes.html' %}
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html> 

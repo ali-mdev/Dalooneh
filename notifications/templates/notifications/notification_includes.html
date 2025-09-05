@@ -1,0 +1,881 @@
+{% load static %}
+<!-- Notification Styles -->
+<style>
+    .notification-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        max-width: 400px;
+        width: 100%;
+        z-index: 9999;
+    }
+    
+    .notification-toast {
+        background: #343a40;
+        color: white;
+        border-right: 6px solid #28a745;
+        border-radius: 8px;
+        padding: 18px;
+        margin-bottom: 15px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+        transform: translateX(100%);
+        opacity: 0;
+        transition: all 0.5s ease;
+        display: flex;
+        flex-direction: column;
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% { box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25); }
+        50% { box-shadow: 0 8px 25px rgba(40, 167, 69, 0.5); }
+        100% { box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25); }
+    }
+    
+    .notification-toast.show {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    
+    .notification-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+    
+    .notification-title {
+        font-weight: bold;
+        font-size: 18px;
+        display: flex;
+        align-items: center;
+    }
+    
+    .notification-title i {
+        margin-left: 10px;
+        color: #28a745;
+        font-size: 20px;
+    }
+    
+    .notification-close {
+        background: none;
+        border: none;
+        color: rgba(255, 255, 255, 0.7);
+        cursor: pointer;
+        font-size: 18px;
+        padding: 0;
+        transition: color 0.3s;
+    }
+    
+    .notification-close:hover {
+        color: white;
+    }
+    
+    .notification-body {
+        margin-bottom: 12px;
+    }
+    
+    .notification-footer {
+        display: flex;
+        justify-content: flex-end;
+    }
+    
+    .notification-info {
+        margin-bottom: 10px;
+        display: flex;
+        justify-content: space-between;
+    }
+    
+    .notification-label {
+        color: rgba(255, 255, 255, 0.7);
+    }
+    
+    .notification-value {
+        font-weight: bold;
+    }
+    
+    .notification-action-btn {
+        text-decoration: none;
+        color: white;
+        background-color: #28a745;
+        border-radius: 5px;
+        padding: 8px 15px;
+        font-size: 15px;
+        transition: background-color 0.3s;
+    }
+    
+    .notification-action-btn:hover {
+        background-color: #218838;
+        color: white;
+    }
+    
+    /* Notification badge */
+    .notification-badge {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        background-color: #dc3545;
+        color: white;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        animation: bounce 1s infinite;
+    }
+    
+    @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-5px); }
+    }
+    
+    /* Notification menu styles */
+    .notification-bell {
+        position: relative;
+        cursor: pointer;
+    }
+    
+    .notification-dropdown {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 350px;
+        max-height: 400px;
+        overflow-y: auto;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 5px 25px rgba(0,0,0,0.25);
+        z-index: 999;
+        display: none;
+        padding: 0;
+    }
+    
+    .notification-dropdown.show {
+        display: block;
+    }
+    
+    .notification-dropdown-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px;
+        border-bottom: 1px solid #eee;
+        background-color: #f8f9fa;
+    }
+    
+    .notification-dropdown-title {
+        font-weight: bold;
+        font-size: 18px;
+    }
+    
+    .notification-dropdown-actions a {
+        font-size: 14px;
+        margin-right: 10px;
+        text-decoration: none;
+        color: #28a745;
+    }
+    
+    .notification-dropdown-actions a:hover {
+        text-decoration: underline;
+    }
+    
+    .notification-item {
+        padding: 15px;
+        border-bottom: 1px solid #eee;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+    
+    .notification-item:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .notification-item.unread {
+        background-color: #e8f4ff;
+        border-right: 4px solid #28a745;
+    }
+    
+    .notification-item-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+    
+    .notification-item-title {
+        font-weight: bold;
+        color: #343a40;
+    }
+    
+    .notification-item-time {
+        font-size: 12px;
+        color: #6c757d;
+    }
+    
+    .notification-item-message {
+        margin-bottom: 5px;
+        font-size: 14px;
+    }
+    
+    .notification-empty {
+        padding: 20px;
+        text-align: center;
+        color: #6c757d;
+    }
+    
+    /* Order notification modal styles */
+    .notification-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease-in-out;
+    }
+    
+    .notification-modal-overlay.show {
+        opacity: 1;
+        visibility: visible;
+    }
+    
+    .notification-modal {
+        background: white;
+        border-radius: 12px;
+        width: 90%;
+        max-width: 550px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        transform: translateY(-20px);
+        opacity: 0;
+        transition: all 0.3s ease-in-out;
+    }
+    
+    .notification-modal-overlay.show .notification-modal {
+        transform: translateY(0);
+        opacity: 1;
+    }
+    
+    .notification-modal-header {
+        background: #28a745;
+        color: white;
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    }
+    
+    .notification-modal-title {
+        display: flex;
+        align-items: center;
+        font-size: 22px;
+        font-weight: 600;
+    }
+    
+    .notification-modal-title i {
+        margin-left: 12px;
+        font-size: 26px;
+    }
+    
+    .notification-modal-close {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 24px;
+        cursor: pointer;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: background-color 0.2s;
+    }
+    
+    .notification-modal-close:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+    }
+    
+    .notification-modal-body {
+        padding: 25px;
+    }
+    
+    .notification-modal-info {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+    
+    .notification-modal-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        border-right: 4px solid #6c757d;
+    }
+    
+    .notification-modal-label {
+        font-weight: 500;
+        color: #6c757d;
+    }
+    
+    .notification-modal-value {
+        font-weight: 700;
+        color: #000;
+    }
+    
+    .notification-modal-row.highlight {
+        background-color: rgba(46, 204, 113, 0.1);
+        border-right-color: #2ecc71;
+    }
+    
+    .notification-modal-actions {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 25px;
+    }
+    
+    .notification-modal-btn {
+        padding: 12px 25px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-align: center;
+        text-decoration: none;
+    }
+    
+    .notification-modal-btn-primary {
+        background-color: #28a745;
+        color: white;
+        border: none;
+        flex-grow: 1;
+        margin-right: 12px;
+    }
+    
+    .notification-modal-btn-primary:hover {
+        background-color: #218838;
+        color: white;
+    }
+    
+    .notification-modal-btn-secondary {
+        background-color: transparent;
+        color: #6c757d;
+        border: 1px solid #6c757d;
+    }
+    
+    .notification-modal-btn-secondary:hover {
+        background-color: #f8f9fa;
+        color: #5a6268;
+    }
+    
+    @media (max-width: 768px) {
+        .notification-container {
+            right: 10px;
+            left: 10px;
+            max-width: unset;
+        }
+        
+        .notification-dropdown {
+            position: fixed;
+            top: 60px;
+            left: 10px;
+            right: 10px;
+            width: auto;
+        }
+        
+        .notification-modal {
+            width: 95%;
+        }
+    }
+</style>
+
+<!-- Notification Elements -->
+<div class="notification-container" id="notificationContainer"></div>
+
+<!-- New Order Notification Modal -->
+<div class="notification-modal-overlay" id="notificationModalOverlay">
+    <div class="notification-modal">
+        <div class="notification-modal-header">
+            <div class="notification-modal-title">
+                <i class="fas fa-utensils"></i>
+                <span>Order Confirmed</span>
+            </div>
+            <button class="notification-modal-close" id="notificationModalClose">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="notification-modal-body">
+            <div class="notification-modal-info" id="notificationModalInfo">
+                <!-- Modal content will be dynamically inserted here -->
+            </div>
+            <div class="notification-modal-actions">
+                <a href="#" class="notification-modal-btn notification-modal-btn-primary" id="notificationModalViewBtn">
+                    View Order
+                </a>
+                <button class="notification-modal-btn notification-modal-btn-secondary" id="notificationModalDismissBtn">
+                    Later
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Notification menu that goes inside the notificationBell element in the main template -->
+<div class="notification-dropdown" id="notificationDropdown">
+    <div class="notification-dropdown-header">
+        <div class="notification-dropdown-title">Notifications</div>
+        <div class="notification-dropdown-actions">
+            <a href="#" id="markAllReadBtn">Mark All as Read</a>
+        </div>
+    </div>
+    <div class="notification-dropdown-body" id="notificationList">
+        <div class="notification-empty">Loading...</div>
+    </div>
+</div>
+
+<!-- Notification audio file -->
+<audio id="notificationSound" preload="auto">
+    <source src="{% static 'sounds/notification.mp3' %}" type="audio/mpeg">
+</audio>
+
+<!-- Notification script -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Settings
+        let notificationPermissionGranted = false;
+        const notificationSound = document.getElementById('notificationSound');
+        const notificationContainer = document.getElementById('notificationContainer');
+        const notificationBell = document.getElementById('notificationBell');
+        const notificationBadge = document.getElementById('notificationBadge');
+        const notificationDropdown = document.getElementById('notificationDropdown');
+        const notificationList = document.getElementById('notificationList');
+        const markAllReadBtn = document.getElementById('markAllReadBtn');
+        const notificationModalOverlay = document.getElementById('notificationModalOverlay');
+        const notificationModalInfo = document.getElementById('notificationModalInfo');
+        const notificationModalViewBtn = document.getElementById('notificationModalViewBtn');
+        const notificationModalClose = document.getElementById('notificationModalClose');
+        const notificationModalDismissBtn = document.getElementById('notificationModalDismissBtn');
+        let ws = null;
+        let reconnectTimeout = null;
+        let reconnectAttempts = 0;
+        const maxReconnectAttempts = 5;
+        let unreadCount = 0;
+        
+        // Function to request browser notification permission
+        function requestNotificationPermission() {
+            if (!('Notification' in window)) {
+                console.log('This browser does not support notifications.');
+                return;
+            }
+            
+            if (Notification.permission === 'granted') {
+                notificationPermissionGranted = true;
+            } else if (Notification.permission !== 'denied') {
+                Notification.requestPermission().then(function(permission) {
+                    if (permission === 'granted') {
+                        notificationPermissionGranted = true;
+                    }
+                });
+            }
+        }
+        
+        // Connect to WebSocket
+        function connectWebSocket() {
+            const wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+            const wsUrl = wsProtocol + window.location.host + '/ws/notifications/';
+            
+            ws = new WebSocket(wsUrl);
+            
+            ws.onopen = function(e) {
+                console.log('WebSocket connected');
+                reconnectAttempts = 0;
+                if (reconnectTimeout) {
+                    clearTimeout(reconnectTimeout);
+                    reconnectTimeout = null;
+                }
+            };
+            
+            ws.onmessage = function(e) {
+                const data = JSON.parse(e.data);
+                if (data.message && data.message.type === 'new_order') {
+                    handleNewOrderNotification(data.message);
+                    loadNotifications(); // Reload notifications
+                }
+            };
+            
+            ws.onclose = function(e) {
+                console.log('WebSocket disconnected');
+                
+                if (reconnectAttempts < maxReconnectAttempts) {
+                    reconnectAttempts++;
+                    const timeout = Math.min(1000 * reconnectAttempts, 10000);
+                    reconnectTimeout = setTimeout(connectWebSocket, timeout);
+                } else {
+                    console.log('Max reconnect attempts reached');
+                }
+            };
+            
+            ws.onerror = function(e) {
+                console.error('WebSocket error:', e);
+            };
+        }
+        
+        // Display new order notification
+        function handleNewOrderNotification(orderData) {
+            // Play notification sound with higher volume
+            playNotificationSound();
+            
+            // Decide how to display the notification
+            if (orderData.is_modal) {
+                // Display notification as modal in center of screen
+                showModalNotification(orderData);
+            } else {
+                // Display notification in page as toast
+                showToastNotification(orderData);
+            }
+            
+            // Display browser notification if user is in another tab
+            if (document.hidden && notificationPermissionGranted) {
+                showBrowserNotification(orderData);
+            }
+            
+            // Update unread notification count
+            updateUnreadCount(unreadCount + 1);
+        }
+        
+        // Play notification sound
+        function playNotificationSound() {
+            if (notificationSound) {
+                // Increase volume
+                notificationSound.volume = 1.0;
+                notificationSound.currentTime = 0;
+                // Try multiple times to play sound
+                const playPromise = notificationSound.play();
+                
+                if (playPromise !== undefined) {
+                    playPromise.catch(error => {
+                        console.error('Error playing notification sound:', error);
+                        // Retry playing sound after user interaction
+                        document.addEventListener('click', function tryPlayAgain() {
+                            notificationSound.play();
+                            document.removeEventListener('click', tryPlayAgain);
+                        }, { once: true });
+                    });
+                }
+            }
+        }
+        
+        // Display notification modal (center of screen)
+        function showModalNotification(orderData) {
+            const formattedPrice = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(orderData.total_price);
+            const orderDate = new Date(orderData.timestamp || new Date()).toLocaleTimeString('en-US');
+            
+            notificationModalInfo.innerHTML = `
+                <div class="notification-modal-row">
+                    <span class="notification-modal-label">Order Number:</span>
+                    <span class="notification-modal-value">${orderData.order_id}</span>
+                </div>
+                <div class="notification-modal-row highlight">
+                    <span class="notification-modal-label">Table:</span>
+                    <span class="notification-modal-value">${orderData.table}</span>
+                </div>
+                <div class="notification-modal-row">
+                    <span class="notification-modal-label">Customer:</span>
+                    <span class="notification-modal-value">${orderData.customer}</span>
+                </div>
+                <div class="notification-modal-row">
+                    <span class="notification-modal-label">Items:</span>
+                    <span class="notification-modal-value">${orderData.items_count} items</span>
+                </div>
+                <div class="notification-modal-row highlight">
+                    <span class="notification-modal-label">Amount:</span>
+                    <span class="notification-modal-value">${formattedPrice} USD</span>
+                </div>
+                <div class="notification-modal-row">
+                    <span class="notification-modal-label">Time:</span>
+                    <span class="notification-modal-value">${orderDate}</span>
+                </div>
+            `;
+            
+            notificationModalViewBtn.href = orderData.order_url.replace('/order/', '/orders/');
+            
+            notificationModalOverlay.classList.add('show');
+        }
+        
+        // Display notification toast in page
+        function showToastNotification(orderData) {
+            const notificationId = 'notification-' + Date.now();
+            const formattedPrice = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(orderData.total_price);
+            const orderDate = new Date(orderData.timestamp || new Date()).toLocaleTimeString('en-US');
+            
+            const toastHtml = `
+                <div class="notification-toast" id="${notificationId}">
+                    <div class="notification-header">
+                        <div class="notification-title">
+                            <i class="fas fa-utensils"></i>
+                            Order Confirmed
+                        </div>
+                        <button class="notification-close" onclick="closeNotification('${notificationId}')">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="notification-body">
+                        <div class="notification-info">
+                            <span class="notification-label">Table:</span>
+                            <span class="notification-value">${orderData.table}</span>
+                        </div>
+                        <div class="notification-info">
+                            <span class="notification-label">Customer:</span>
+                            <span class="notification-value">${orderData.customer}</span>
+                        </div>
+                        <div class="notification-info">
+                            <span class="notification-label">Items:</span>
+                            <span class="notification-value">${orderData.items_count}</span>
+                        </div>
+                        <div class="notification-info">
+                            <span class="notification-label">Amount:</span>
+                            <span class="notification-value">${formattedPrice} USD</span>
+                        </div>
+                        <div class="notification-info">
+                            <span class="notification-label">Time:</span>
+                            <span class="notification-value">${orderDate}</span>
+                        </div>
+                    </div>
+                    <div class="notification-footer">
+                        <a href="${orderData.order_url}" class="notification-action-btn">
+                            View Order
+                        </a>
+                    </div>
+                </div>
+            `;
+            
+            notificationContainer.insertAdjacentHTML('afterbegin', toastHtml);
+            
+            // Display with delay to apply animation
+            setTimeout(() => {
+                const notificationEl = document.getElementById(notificationId);
+                if (notificationEl) {
+                    notificationEl.classList.add('show');
+                }
+            }, 10);
+            
+            // Auto-remove after 30 seconds (increase display time)
+            setTimeout(() => {
+                closeNotification(notificationId);
+            }, 30000);
+        }
+        
+        // Display browser notification
+        function showBrowserNotification(orderData) {
+            const title = 'New Order Confirmed';
+            const options = {
+                body: `Table: ${orderData.table} • Customer: ${orderData.customer}`,
+                icon: '/static/images/logo.png',
+                badge: '/static/images/logo-small.png',
+                tag: 'new-order-' + orderData.order_id,
+                renotify: true,
+                vibrate: [200, 100, 200], // Add vibration for mobile devices
+                requireInteraction: true   // Require user interaction to close
+            };
+            
+            const notification = new Notification(title, options);
+            
+            notification.onclick = function() {
+                window.focus();
+                window.location.href = orderData.order_url;
+                notification.close();
+            };
+        }
+        
+        // Close a notification
+        window.closeNotification = function(notificationId) {
+            const notificationEl = document.getElementById(notificationId);
+            if (notificationEl) {
+                notificationEl.classList.remove('show');
+                setTimeout(() => {
+                    notificationEl.remove();
+                }, 500);
+            }
+        };
+        
+        // Close notification modal
+        notificationModalClose.addEventListener('click', function() {
+            notificationModalOverlay.classList.remove('show');
+        });
+        
+        notificationModalDismissBtn.addEventListener('click', function() {
+            notificationModalOverlay.classList.remove('show');
+        });
+        
+        // Update unread notification count
+        function updateUnreadCount(count) {
+            unreadCount = count;
+            if (count > 0) {
+                notificationBadge.textContent = count;
+                notificationBadge.classList.remove('d-none');
+            } else {
+                notificationBadge.classList.add('d-none');
+            }
+        }
+        
+        // Load notifications
+        function loadNotifications() {
+            fetch('/notifications/get-notifications/')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        renderNotifications(data.notifications);
+                        const unreadNotifications = data.notifications.filter(n => !n.read);
+                        updateUnreadCount(unreadNotifications.length);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading notifications:', error);
+                    notificationList.innerHTML = '<div class="notification-empty">Error loading notifications</div>';
+                });
+        }
+        
+        // Display notifications in menu
+        function renderNotifications(notifications) {
+            if (notifications.length === 0) {
+                notificationList.innerHTML = '<div class="notification-empty">No new notifications</div>';
+                return;
+            }
+            
+            let html = '';
+            notifications.forEach(notification => {
+                const timestamp = new Date(notification.timestamp);
+                const formattedTime = new Intl.DateTimeFormat('en-US', {
+                    year: 'numeric',
+                    month: 'numeric',
+                    day: 'numeric',
+                    hour: 'numeric',
+                    minute: 'numeric'
+                }).format(timestamp);
+                
+                const icon = getNotificationIcon(notification.type);
+                
+                html += `
+                    <div class="notification-item ${notification.read ? '' : 'unread'}" 
+                         data-notification-id="${notification.id}" 
+                         data-url="${notification.url}">
+                        <div class="notification-item-header">
+                            <div class="notification-item-title">
+                                <i class="${icon} me-1"></i>
+                                ${notification.title}
+                            </div>
+                            <div class="notification-item-time">${formattedTime}</div>
+                        </div>
+                        <div class="notification-item-message">${notification.message}</div>
+                    </div>
+                `;
+            });
+            
+            notificationList.innerHTML = html;
+            
+            // Add event listener for clicking on notifications
+            document.querySelectorAll('.notification-item').forEach(item => {
+                item.addEventListener('click', handleNotificationClick);
+            });
+        }
+        
+        // Get appropriate icon for each notification type
+        function getNotificationIcon(type) {
+            switch (type) {
+                case 'new_order':
+                    return 'fas fa-utensils';
+                case 'order_status':
+                    return 'fas fa-clipboard-list';
+                case 'payment':
+                    return 'fas fa-credit-card';
+                default:
+                    return 'fas fa-bell';
+            }
+        }
+        
+        // Handle notification click
+        function handleNotificationClick(e) {
+            const notificationId = this.dataset.notificationId;
+            const url = this.dataset.url;
+            
+            // Mark as read
+            if (!this.classList.contains('read')) {
+                fetch(`/notifications/mark-read/${notificationId}/`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            this.classList.remove('unread');
+                            updateUnreadCount(unreadCount - 1);
+                        }
+                    })
+                    .catch(error => console.error('Error marking notification as read:', error));
+            }
+            
+            // Navigate to related page
+            if (url) {
+                window.location.href = url;
+            }
+            
+            // Close notification menu
+            notificationDropdown.classList.remove('show');
+        }
+        
+        // Handle click on mark all as read button
+        markAllReadBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            fetch('/notifications/mark-all-read/')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.querySelectorAll('.notification-item.unread').forEach(item => {
+                            item.classList.remove('unread');
+                        });
+                        updateUnreadCount(0);
+                    }
+                })
+                .catch(error => console.error('Error marking all notifications as read:', error));
+        });
+        
+        // Handle click on bell icon
+        notificationBell.addEventListener('click', function(e) {
+            e.stopPropagation();
+            notificationDropdown.classList.toggle('show');
+        });
+        
+        // Close notification menu by clicking outside
+        document.addEventListener('click', function(e) {
+            if (!notificationBell.contains(e.target)) {
+                notificationDropdown.classList.remove('show');
+            }
+        });
+        
+        // Start connection
+        requestNotificationPermission();
+        connectWebSocket();
+        loadNotifications();
+        
+        // Reload notifications every 60 seconds
+        setInterval(loadNotifications, 60000);
+        
+        // Close connection when leaving page
+        window.addEventListener('beforeunload', function() {
+            if (ws) {
+                ws.close();
+            }
+        });
+    });
+</script> 

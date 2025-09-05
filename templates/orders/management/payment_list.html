@@ -1,0 +1,135 @@
+{% extends 'orders/management/base.html' %}
+{% load humanize %}
+{% load custom_filters %}
+
+{% block title %}Payments List{% endblock %}
+
+{% block page_title %}Payments List{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/material_blue.css">
+{% endblock %}
+
+{% block content %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">Filters</h5>
+    </div>
+    <div class="card-body">
+        <form method="get" action="{% url 'orders:management_payment_list' %}">
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <label for="payment_method" class="form-label">Payment Method</label>
+                    <select class="form-select" id="payment_method" name="payment_method">
+                        <option value="">All Methods</option>
+                        {% for code, name in payment_method_choices %}
+                        <option value="{{ code }}" {% if selected_payment_method == code %}selected{% endif %}>{{ name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="status" class="form-label">Payment Status</label>
+                    <select class="form-select" id="status" name="status">
+                        <option value="">All Statuses</option>
+                        {% for code, name in status_choices %}
+                        <option value="{{ code }}" {% if selected_status == code %}selected{% endif %}>{{ name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="date_from" class="form-label">From Date</label>
+                    <input type="text" class="form-control date-picker" id="date_from" name="date_from" value="{{ date_from }}" placeholder="Select date">
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="date_to" class="form-label">To Date</label>
+                    <input type="text" class="form-control date-picker" id="date_to" name="date_to" value="{{ date_to }}" placeholder="Select date">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12 text-end">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-filter me-1"></i>
+                        Apply Filter
+                    </button>
+                    <a href="{% url 'orders:management_payment_list' %}" class="btn btn-secondary">
+                        <i class="fas fa-times me-1"></i>
+                        Clear Filters
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Payments List</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Order Number</th>
+                        <th>Customer</th>
+                        <th>Amount</th>
+                        <th>Payment Method</th>
+                        <th>Status</th>
+                        <th>Transaction ID</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for payment in payments %}
+                    <tr>
+                        <td>{{ payment.order.order_number }}</td>
+                        <td>{{ payment.order.customer }}</td>
+                        <td>{{ payment.amount|intcomma:False }} USD</td>
+                        <td>
+                            {% for code, name in payment_method_choices %}
+                                {% if code == payment.payment_method %}{{ name }}{% endif %}
+                            {% endfor %}
+                        </td>
+                        <td>
+                            <span class="badge {% if payment.status == 'completed' %}bg-success{% elif payment.status == 'pending' %}bg-warning{% else %}bg-danger{% endif %}">
+                                {% for code, name in status_choices %}
+                                    {% if code == payment.status %}{{ name }}{% endif %}
+                                {% endfor %}
+                            </span>
+                        </td>
+                        <td>{{ payment.transaction_id|default:"-" }}</td>
+                        <td>{{ payment.created_at|date:"Y/m/d H:i" }}</td>
+                        <td>
+                            <div class="btn-group">
+                                <a href="{% url 'orders:management_payment_detail' payment.id %}" class="btn btn-sm btn-outline-primary" title="View Details">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center">No payments found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/en.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        flatpickr(".date-picker", {
+            dateFormat: "Y/m/d",
+            allowInput: true
+        });
+    });
+</script>
+{% endblock %} 

@@ -1,0 +1,144 @@
+{% extends 'customers/management/base.html' %}
+{% load humanize %}
+{% load customer_tags %}
+
+{% block title %}Customers | Customer Management Panel{% endblock %}
+
+{% block page_title %}Customers{% endblock %}
+
+{% block toolbar_buttons %}
+<a href="{% url 'customers:management_customer_add' %}" class="btn btn-success">
+    <i class="fas fa-user-plus me-1"></i> Add New Customer
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="card-title">Filters</h5>
+    </div>
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                <label for="membership" class="form-label">Membership Level</label>
+                <select name="membership" id="membership" class="form-select">
+                    <option value="">All Levels</option>
+                    <option value="regular" {% if filters.membership == 'regular' %}selected{% endif %}>Regular</option>
+                    <option value="silver" {% if filters.membership == 'silver' %}selected{% endif %}>Silver</option>
+                    <option value="gold" {% if filters.membership == 'gold' %}selected{% endif %}>Gold</option>
+                    <option value="platinum" {% if filters.membership == 'platinum' %}selected{% endif %}>Platinum</option>
+                </select>
+            </div>
+            
+            <div class="col-md-3">
+                <label for="is_active" class="form-label">Status</label>
+                <select name="is_active" id="is_active" class="form-select">
+                    <option value="">All</option>
+                    <option value="true" {% if filters.is_active == 'true' %}selected{% endif %}>Active</option>
+                    <option value="false" {% if filters.is_active == 'false' %}selected{% endif %}>Inactive</option>
+                </select>
+            </div>
+            
+            <div class="col-md-6">
+                <label for="q" class="form-label">Search</label>
+                <div class="input-group">
+                    <input type="text" name="q" id="q" class="form-control" placeholder="Name, phone number or national ID" value="{{ filters.search_query }}">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search me-1"></i> Search
+                    </button>
+                    <a href="{% url 'customers:management_customer_list' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-times me-1"></i> Clear Filters
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        {% if customers %}
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Full Name</th>
+                        <th scope="col">Phone Number</th>
+                        <th scope="col">Membership Level</th>
+                        <th scope="col">Points</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Registration Date</th>
+                        <th scope="col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for customer in customers %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ customer.user.get_full_name }}</td>
+                        <td>{{ customer.phone_number }}</td>
+                        <td>
+                            {% if customer.membership_level == 'regular' %}
+                            <span class="badge bg-secondary">Regular</span>
+                            {% elif customer.membership_level == 'silver' %}
+                            <span class="badge bg-secondary">Silver</span>
+                            {% elif customer.membership_level == 'gold' %}
+                            <span class="badge bg-warning text-dark">Gold</span>
+                            {% elif customer.membership_level == 'platinum' %}
+                            <span class="badge bg-primary">Platinum</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ customer.total_points|intcomma }}</td>
+                        <td>
+                            {% if customer.is_active %}
+                            <span class="badge bg-success">Active</span>
+                            {% else %}
+                            <span class="badge bg-danger">Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ customer.created_at|date:"Y-m-d" }}</td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <a href="{% url 'customers:management_customer_detail' customer.id %}" class="btn btn-sm btn-info">
+                                    <i class="fas fa-eye"></i> View
+                                </a>
+                                <a href="{% url 'customers:management_customer_edit' customer.id %}" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-users fa-4x text-muted mb-3"></i>
+            <h5>No customers found</h5>
+            <p class="text-muted">You can add a new customer or change your filters.</p>
+            <a href="{% url 'customers:management_customer_add' %}" class="btn btn-primary mt-3">
+                <i class="fas fa-user-plus me-1"></i> Add New Customer
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Auto-submit form when filters change
+        const filterForm = document.querySelector('form');
+        const filterSelects = document.querySelectorAll('select[name="membership"], select[name="is_active"]');
+        
+        filterSelects.forEach(select => {
+            select.addEventListener('change', function() {
+                filterForm.submit();
+            });
+        });
+    });
+</script>
+{% endblock %} 

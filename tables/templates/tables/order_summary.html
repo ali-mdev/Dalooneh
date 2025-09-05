@@ -1,0 +1,570 @@
+{% extends 'index.html' %}
+{% load humanize %}
+{% load custom_filters %}
+
+{% block title %}Order Successful - Dalooneh{% endblock %}
+
+{% block content %}
+{% load static %}
+<br>
+<br>
+
+<div class="app pt-80 pb-70" style="background: linear-gradient(to bottom, #f0f7f9, #e3eef2); font-family: Arial, Helvetica, sans-serif;">
+    <div class="tf-container">
+        <!-- Order Success Header -->
+        <div class="success-wrapper">            
+            <div class="success-card" style="background: #fff; border-radius: 16px; padding: 30px 20px; text-align: center; position: relative; border: 2px solid #c49f45; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); overflow: hidden;">
+                <div class="success-badge" style="background: #f0f7f9; background-size: 100px; width: 80px; height: 80px; margin: 0 auto 20px; position: relative;">
+                    <div class="success-icon" style="background: #2c7a88; width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center; position: absolute; top: 5px; left: 5px; z-index: 2; border: 2px solid #c49f45;">
+                        <i class="fas fa-check" style="color: #fff; font-size: 30px;"></i>
+                    </div>
+                </div>
+                
+                <h2 class="success-title" style="font-size: 1.8rem; font-weight: 700; margin-bottom: 10px; color: #2c7a88; font-family: Arial, Helvetica, sans-serif;">Your order has been successfully submitted</h2>
+                <p class="success-message" style="color: #555; margin-bottom: 25px; font-size: 1rem;">Our staff will contact you shortly for delivery of your order.</p>
+                
+                <div class="table-info" style="display: inline-flex; align-items: center; padding: 10px 20px; background: #f5f7f0; border-radius: 12px; margin-bottom: 15px; color: #2c7a88; font-weight: 600; border: 1px solid #c49f45;">
+                    <div class="table-icon" style="margin-left: 10px;">
+                        <i class="fas fa-utensils" style="color: #2c7a88;"></i>
+                    </div>
+                    <span>Table number {{ table_number }}</span>
+                </div>
+                
+                {% if order_time %}
+                <div class="order-time" style="display: inline-flex; align-items: center; padding: 10px 20px; background: #f5f7f0; border-radius: 12px; color: #2c7a88; font-weight: 500; border: 1px solid #c49f45;">
+                    <div class="time-icon" style="margin-left: 10px;">
+                        <i class="fas fa-clock" style="color: #2c7a88;"></i>
+                    </div>
+                    <span>{{ order_time|to_local_date:'%Y/%m/%d' }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Hidden prep-time data for JS (prevents linter issues with inline JS objects) -->
+        <div id="prep-data" data-prep='[
+            {% for item in items %}
+                {"quantity": {{ item.quantity }}, "preparationTime": {{ item.product.preparation_time }}}{% if not forloop.last %}, {% endif %}
+            {% endfor %}
+        ]' style="display:none"></div>
+
+        <!-- Preparation Countdown Timer -->
+        <div class="preparation-timer" style="background: #fff; border-radius: 16px; padding: 20px; display: flex; align-items: center; border: 2px solid #c49f45; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); margin-bottom: 20px;">
+            <div class="timer-icon" style="width: 50px; height: 50px; background: #2c7a88; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-left: 15px; border: 1px solid #c49f45;">
+                <i class="fas fa-hourglass-half" style="color: white; font-size: 24px;"></i>
+            </div>
+            <div class="timer-content" style="flex: 1;">
+                <h4 style="font-size: 1.2rem; font-weight: 600; color: #2c7a88; margin: 0 0 10px 0; font-family: Arial, Helvetica, sans-serif;">Estimated preparation time</h4>
+                <div class="countdown-display" id="countdown-timer" style="font-size: 2.2rem; font-weight: 700; color: #2c7a88; margin-bottom: 10px; text-align: center;">
+                    <span id="countdown-minutes">--</span>:<span id="countdown-seconds">--</span>
+                </div>
+                <div class="progress-bar" style="height: 12px; background: #e3eef2; border-radius: 6px; margin-bottom: 10px; overflow: hidden; border: 1px solid #c49f45;">
+                    <div class="progress-fill" id="progress-fill" style="height: 100%; background: #2c7a88; width: 0%; transition: width 1s linear;"></div>
+                </div>
+                <p class="timer-status" style="margin: 0; color: #666; font-size: 0.9rem; text-align: center;">Preparing your order...</p>
+            </div>
+        </div>
+        
+        <!-- Order Summary Card -->
+        <div class="summary-card" style="background: #fff; border-radius: 16px; padding: 20px; margin-bottom: 20px; border: 2px solid #c49f45; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);">
+            <div class="summary-header" style="display: flex; align-items: center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #c49f45;">
+                <div class="header-icon" style="width: 40px; height: 40px; background: #2c7a88; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-left: 15px; border: 1px solid #c49f45;">
+                    <i class="fas fa-receipt" style="color: white; font-size: 20px;"></i>
+                </div>
+                <h3 style="font-size: 1.4rem; font-weight: 600; color: #2c7a88; margin: 0; font-family: Arial, Helvetica, sans-serif;">Your Order Details</h3>
+            </div>
+            
+            <!-- Order Items -->
+            <div class="order-items" style="margin-bottom: 20px;">
+                {% for item in items %}
+                <div class="order-item">
+                    <div class="order-left">
+                        <div class="thumb-wrap">
+                            {% if item.product.image %}
+                                <img class="item-thumb" src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+                            {% else %}
+                                <img class="item-thumb" src="{% static 'images/food/cate-1.jpg' %}" alt="{{ item.product.name }}">
+                            {% endif %}
+                            <span class="qty-badge">{{ item.quantity }}</span>
+                        </div>
+                        <div class="item-info">
+                            <div class="item-name">{{ item.product.name }}</div>
+                            <div class="item-meta">
+                                <span class="item-qty">Qty {{ item.quantity }}</span>
+                                <span class="item-mult">×</span>
+                                <span class="item-unit">${{ item.price|floatformat:2|intcomma }}</span>
+                                {% if item.product.preparation_time %}
+                                    <span class="item-prep">~{{ item.product.preparation_time }} min</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="item-total">${{ item.total_price|floatformat:2|intcomma }}</div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Order Total -->
+            <div class="total-section" style="background: #f5f7f0; padding: 15px; border-radius: 12px; margin-top: 20px; border: 1px solid #c49f45;">
+                <div class="total-row" style="display: flex; justify-content: space-between; align-items: center;">
+                    <span class="total-label" style="font-size: 1.1rem; font-weight: 600; color: #2c7a88;">Amount to be paid</span>
+                    <span class="total-value" style="font-size: 1.4rem; font-weight: 700; color: #2c7a88;">${{ total_amount|floatformat:2|intcomma }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="action-buttons" style="display: flex; gap: 15px; margin-bottom: 20px;">
+            <a href="{% url 'home' %}" class="menu-button" style="flex: 1; padding: 15px; border-radius: 12px; text-align: center; text-decoration: none; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: all 0.2s ease; background: #f5f7f0; color: #2c7a88; border: 2px solid #c49f45;">
+                <i class="fas fa-home" style="font-size: 1.5rem; margin-bottom: 8px;"></i>
+                <span>Home Page</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Base Styles */
+    .tf-container {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    
+    /* Success Card */
+    .success-wrapper {
+        margin-bottom: 30px;
+    }
+    
+    .success-card {
+        background: #fff;
+        border-radius: 16px;
+        padding: 30px 20px;
+        text-align: center;
+        position: relative;
+        border: 2px solid #c49f45;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+    
+    .success-badge {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 20px;
+        position: relative;
+    }
+    
+    .success-icon {
+        background: #2c7a88;
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        top: 5px;
+        left: 5px;
+        z-index: 2;
+        border: 2px solid #c49f45;
+    }
+    
+    .success-icon i {
+        color: #fff;
+        font-size: 30px;
+    }
+    
+    .success-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+        color: #2c7a88;
+        font-family: Arial, Helvetica, sans-serif;
+    }
+    
+    .success-message {
+        color: #555;
+        margin-bottom: 25px;
+        font-size: 1rem;
+    }
+    
+    .table-info {
+        display: inline-flex;
+        align-items: center;
+        padding: 10px 20px;
+        background: #f5f7f0;
+        border-radius: 12px;
+        margin-bottom: 15px;
+        color: #2c7a88;
+        font-weight: 600;
+        border: 1px solid #c49f45;
+    }
+    
+    .table-icon {
+        margin-left: 10px;
+    }
+    
+    .order-time {
+        display: inline-flex;
+        align-items: center;
+        padding: 10px 20px;
+        background: #f5f7f0;
+        border-radius: 12px;
+        color: #2c7a88;
+        font-weight: 500;
+        border: 1px solid #c49f45;
+    }
+    
+    .time-icon {
+        margin-left: 10px;
+    }
+    
+    /* Summary Card */
+    .summary-card {
+        background: #fff;
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 20px;
+        border: 2px solid #c49f45;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    .summary-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #c49f45;
+    }
+    
+    .header-icon {
+        width: 40px;
+        height: 40px;
+        background: #2c7a88;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-left: 15px;
+        border: 1px solid #c49f45;
+    }
+    
+    .header-icon i {
+        color: white;
+        font-size: 20px;
+    }
+    
+    .summary-header h3 {
+        font-size: 1.4rem;
+        font-weight: 600;
+        color: #2c7a88;
+        margin: 0;
+        font-family: Arial, Helvetica, sans-serif;
+    }
+    
+    /* Order Items */
+    .order-items {
+        margin-bottom: 20px;
+    }
+    .order-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        padding: 14px;
+        margin-bottom: 12px;
+        background: #f7fbfc;
+        border-radius: 14px;
+        border: 1px solid #c49f45;
+        box-shadow: 0 2px 10px rgba(44, 122, 136, 0.06);
+        transition: transform 0.12s ease, box-shadow 0.12s ease;
+    }
+    .order-item:hover { box-shadow: 0 6px 18px rgba(44, 122, 136, 0.12); transform: translateY(-1px); }
+    .order-left { display: flex; align-items: center; gap: 12px; flex: 1; }
+    .thumb-wrap { position: relative; width: 54px; height: 54px; border-radius: 12px; overflow: hidden; border: 1px solid #c49f45; background: #e3eef2; }
+    .item-thumb { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .qty-badge { position: absolute; top: -8px; left: -8px; width: 24px; height: 24px; border-radius: 50%; background: #2c7a88; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; border: 2px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+    .item-info { display: flex; flex-direction: column; gap: 4px; }
+    .item-name { font-weight: 700; color: #2c7a88; }
+    .item-meta { display: flex; align-items: center; gap: 8px; color: #6b7b83; font-size: 0.85rem; }
+    .item-mult { color: #a0b3ba; }
+    .item-prep { background: #e9f3f6; color: #2c7a88; padding: 2px 8px; border-radius: 999px; font-size: 0.75rem; border: 1px solid #c49f45; }
+    .item-total { font-weight: 800; color: #2c7a88; min-width: 110px; text-align: end; }
+    
+    .item-left {
+        display: flex;
+        align-items: center;
+    }
+    
+    .item-circle {
+        width: 36px;
+        height: 36px;
+        background: #2c7a88;
+        border-radius: 50%;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        margin-left: 12px;
+        border: 1px solid #c49f45;
+    }
+    
+    .item-details {
+        flex: 1;
+    }
+    
+    .item-name {
+        font-weight: 600;
+        color: #2c7a88;
+        margin-bottom: 5px;
+    }
+    
+    .item-unit-price {
+        font-size: 0.85rem;
+        color: #777;
+    }
+    
+    .item-total {
+        font-weight: 700;
+        color: #2c7a88;
+    }
+    
+    /* Total Section */
+    .total-section {
+        background: #f5f7f0;
+        padding: 15px;
+        border-radius: 12px;
+        margin-top: 20px;
+        border: 1px solid #c49f45;
+    }
+    
+    .total-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .total-label {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #2c7a88;
+    }
+    
+    .total-value {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #2c7a88;
+    }
+    
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .menu-button, .home-button {
+        flex: 1;
+        padding: 15px;
+        border-radius: 12px;
+        text-align: center;
+        text-decoration: none;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+    }
+    
+    .menu-button {
+        background: #f5f7f0;
+        color: #2c7a88;
+        border: 2px solid #c49f45;
+    }
+    
+    .home-button {
+        background: #f5f7f0;
+        color: #2c7a88;
+        border: 2px solid #c49f45;
+    }
+    
+    .menu-button:hover, .home-button:hover {
+        background: #e3eef2;
+    }
+    
+    .menu-button i, .home-button i {
+        font-size: 1.5rem;
+        margin-bottom: 8px;
+    }
+    
+    /* Preparation Timer */
+    .preparation-timer {
+        background: #fff;
+        border-radius: 16px;
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        border: 2px solid #c49f45;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+    }
+    
+    .timer-icon {
+        width: 50px;
+        height: 50px;
+        background: #2c7a88;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-left: 15px;
+        border: 1px solid #c49f45;
+    }
+    
+    .timer-icon i {
+        color: white;
+        font-size: 24px;
+    }
+    
+    .timer-content {
+        flex: 1;
+    }
+    
+    .timer-content h4 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #2c7a88;
+        margin: 0 0 10px 0;
+        font-family: Arial, Helvetica, sans-serif;
+    }
+    
+    .countdown-display {
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: #2c7a88;
+        margin-bottom: 10px;
+        text-align: center;
+    }
+    
+    .progress-bar {
+        height: 12px;
+        background: #e3eef2;
+        border-radius: 6px;
+        margin-bottom: 10px;
+        overflow: hidden;
+        border: 1px solid #c49f45;
+    }
+    
+    .progress-fill {
+        height: 100%;
+        background: #2c7a88;
+        width: 0%;
+        transition: width 1s linear;
+    }
+    
+    .timer-status {
+        margin: 0;
+        color: #666;
+        font-size: 0.9rem;
+        text-align: center;
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 767px) {
+        .action-buttons { flex-direction: column; }
+        .order-item { flex-direction: column; align-items: stretch; gap: 10px; }
+        .thumb-wrap { width: 48px; height: 48px; }
+        .item-total { font-size: 1rem; min-width: auto; text-align: start; }
+        .countdown-display { font-size: 1.8rem; }
+        .timer-content h4 { font-size: 1rem; }
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Get total preparation time (in minutes) from all items (read from data attribute to avoid template tags inside JS)
+        const prepDataEl = document.getElementById('prep-data');
+        const preparationTimes = prepDataEl ? JSON.parse(prepDataEl.getAttribute('data-prep') || '[]') : [];
+        
+        // Calculate total prep time based on parallel cooking
+        let totalPrepTimeMinutes = 0;
+        if (preparationTimes.length > 0) {
+            // For parallel cooking, we take the maximum preparation time
+            // If there are multiple quantities of the same item, we need to consider that
+            const maxPrepTime = Math.max(...preparationTimes.map(item => item.preparationTime));
+            
+            // If there are multiple quantities of the same item, we need to add some time
+            // but not the full preparation time for each additional quantity
+            const additionalTime = preparationTimes.reduce((sum, item) => {
+                if (item.quantity > 1) {
+                    // Add 30% of the preparation time for each additional quantity
+                    return sum + ((item.quantity - 1) * (item.preparationTime * 0.3));
+                }
+                return sum;
+            }, 0);
+            
+            totalPrepTimeMinutes = maxPrepTime + additionalTime;
+            
+            // Ensure we have at least 5 minutes
+            totalPrepTimeMinutes = Math.max(totalPrepTimeMinutes, 5);
+        } else {
+            totalPrepTimeMinutes = 15; // Default if no items
+        }
+        
+        // Convert to seconds for countdown (ensure integer seconds)
+        const totalPrepTimeSeconds = Math.ceil(totalPrepTimeMinutes * 60);
+        let remainingSeconds = totalPrepTimeSeconds;
+        
+        // Set hidden field for JSX
+        const orderTime = '{{ order_time|date:"U" }}';
+        const createdTimestamp = orderTime ? parseInt(orderTime) : Math.floor(Date.now() / 1000);
+        
+        // Calculate how much time has already passed
+        const currentTimestamp = Math.floor(Date.now() / 1000);
+        const elapsedSeconds = currentTimestamp - createdTimestamp;
+        // Ensure remaining seconds is an integer
+        remainingSeconds = Math.max(Math.floor(totalPrepTimeSeconds - elapsedSeconds), 0);
+        
+        // Update countdown every second
+        const countdownTimer = document.getElementById('countdown-timer');
+        const countdownMinutes = document.getElementById('countdown-minutes');
+        const countdownSeconds = document.getElementById('countdown-seconds');
+        const progressFill = document.getElementById('progress-fill');
+        const timerStatus = document.querySelector('.timer-status');
+        
+        function updateCountdown() {
+            if (remainingSeconds <= 0) {
+                // Timer finished
+                countdownMinutes.textContent = '00';
+                countdownSeconds.textContent = '00';
+                progressFill.style.width = '100%';
+                timerStatus.textContent = 'Your order is ready for delivery';
+                timerStatus.style.color = '#4CAF50';
+                timerStatus.style.fontWeight = 'bold';
+                return;
+            }
+            
+            // Calculate minutes and seconds (force integers)
+            const minutes = Math.floor(remainingSeconds / 60);
+            const seconds = Math.floor(remainingSeconds % 60);
+            
+            // Update display
+            countdownMinutes.textContent = minutes.toString().padStart(2, '0');
+            countdownSeconds.textContent = seconds.toString().padStart(2, '0');
+            
+            // Update progress bar
+            const progressPercentage = ((totalPrepTimeSeconds - remainingSeconds) / totalPrepTimeSeconds) * 100;
+            progressFill.style.width = `${progressPercentage}%`;
+            
+            // Decrement remaining time
+            remainingSeconds--;
+            
+            // Call again in 1 second
+            setTimeout(updateCountdown, 1000);
+        }
+        
+        // Start the countdown
+        updateCountdown();
+    });
+</script>
+{% endblock %} 

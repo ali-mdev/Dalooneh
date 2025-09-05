@@ -1,0 +1,179 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ product.name }} - Dalooneh{% endblock %}
+
+{% block content %}
+{% if table %}
+<div class="table-info">
+    <h4>Table Number {{ table.number }}</h4>
+    <p>Capacity: {{ table.capacity }} people</p>
+</div>
+{% endif %}
+
+<div class="row">
+    <div class="col-md-6">
+        {% if product.image %}
+        <img src="{{ product.image.url }}" class="img-fluid rounded" alt="{{ product.name }}">
+        {% endif %}
+    </div>
+    <div class="col-md-6">
+        <h1 class="mb-3">{{ product.name }}</h1>
+        <p class="text-muted mb-4">{{ product.description }}</p>
+        
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Product Information</h5>
+                <ul class="list-unstyled">
+                    <li class="mb-2">
+                        <strong>Price:</strong>
+                        <span class="h4 text-primary">{{ product.price }} USD</span>
+                    </li>
+                    <li class="mb-2">
+                        <strong>Preparation Time:</strong>
+                        {{ product.preparation_time }} minutes
+                    </li>
+                    <li class="mb-2">
+                        <strong>Category:</strong>
+                        <a href="{% url 'menu:category_detail' product.category.slug %}{% if table %}?table={{ table.number }}{% endif %}">
+                            {{ product.category.name }}
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <form id="add-to-cart-form" class="mb-3">
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <label for="quantity" class="form-label">Quantity:</label>
+                    <input type="number" id="quantity" name="quantity" class="form-control" value="1" min="1" max="20">
+                </div>
+            </div>
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary btn-lg" id="add-to-cart-btn">
+                    <i class="bi bi-cart-plus"></i>
+                    Add to Cart
+                </button>
+                <a href="{% url 'menu:category_detail' product.category.slug %}{% if table %}?table={{ table.number }}{% endif %}" 
+                   class="btn btn-outline-secondary">
+                    Back to Category
+                </a>
+            </div>
+        </form>
+        
+        <div id="cart-status" class="d-none alert alert-success">
+            Product added to cart. 
+            <a href="{% url 'tables:view_cart' %}" class="alert-link">View Cart</a>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const addToCartForm = document.getElementById('add-to-cart-form');
+        const cartStatus = document.getElementById('cart-status');
+        
+        addToCartForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const quantity = document.getElementById('quantity').value;
+            addToCart({{ product.id }}, quantity);
+        });
+        
+        function addToCart(productId, quantity) {
+            // Get the CSRF token from the cookie
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+            
+            const csrftoken = getCookie('csrftoken');
+            
+            // Prepare form data
+            const formData = new FormData();
+            formData.append('product_id', productId);
+            formData.append('quantity', quantity);
+            
+            // Disable the submit button during the request
+            const addToCartBtn = document.getElementById('add-to-cart-btn');
+            addToCartBtn.disabled = true;
+            addToCartBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Adding...';
+            
+            // Make the AJAX request
+            fetch('/tables/add-to-cart/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken,
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Show success message
+                    cartStatus.textContent = data.message;
+                    cartStatus.classList.remove('d-none', 'alert-danger');
+                    cartStatus.classList.add('alert-success');
+                    
+                    // Dispatch cartUpdated event
+                    document.dispatchEvent(new CustomEvent('cartUpdated', {
+                        detail: { cartCount: data.cart_count }
+                    }));
+                    
+                    // Show the cart status message with link to cart
+                    cartStatus.innerHTML = `Product added to your cart. <a href="{% url 'tables:view_cart' %}" class="alert-link">View Cart</a>`;
+                    
+                    // Show success message with iOS-style message box
+                    if (typeof showSuccessMessage === 'function') {
+                        showSuccessMessage('Product added to your cart', function() {
+                            // If user clicks confirm button, other operations can be performed
+                        });
+                    }
+                } else {
+                    // Show error message
+                    cartStatus.textContent = data.message || 'Sorry, cannot add to cart';
+                    cartStatus.classList.remove('d-none', 'alert-success');
+                    cartStatus.classList.add('alert-danger');
+                    
+                    // Show error message with iOS-style message box
+                    if (typeof showErrorMessage === 'function') {
+                        showErrorMessage(data.message || 'Sorry, cannot add to cart');
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                cartStatus.textContent = 'There was a problem connecting to the server';
+                cartStatus.classList.remove('d-none', 'alert-success');
+                cartStatus.classList.add('alert-danger');
+                
+                // Show error message with iOS-style message box
+                if (typeof showErrorMessage === 'function') {
+                    showErrorMessage('There was a problem connecting to the server. Please try again');
+                }
+            })
+            .finally(() => {
+                // Re-enable the button
+                addToCartBtn.disabled = false;
+                addToCartBtn.innerHTML = '<i class="bi bi-cart-plus"></i> Add to Cart';
+                
+                // Show the cart status
+                cartStatus.classList.remove('d-none');
+            });
+        }
+    });
+</script>
+{% endblock %}
+
+{% endblock %} 

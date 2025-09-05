@@ -1,0 +1,177 @@
+{% extends 'customers/management/base.html' %}
+{% load humanize %}
+
+{% block title %}{{ title }} | Customer Management Panel{% endblock %}
+
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block toolbar_buttons %}
+<a href="{% url 'customers:management_discount_list' %}" class="btn btn-secondary">
+    <i class="fas fa-arrow-left me-1"></i> Back to List
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.customer.id_for_label }}" class="form-label">{{ form.customer.label }}</label>
+                        {{ form.customer }}
+                        {% if form.customer.errors %}
+                        <div class="text-danger mt-1 small">
+                            {% for error in form.customer.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="{{ form.code.id_for_label }}" class="form-label">{{ form.code.label }}</label>
+                            {{ form.code }}
+                            {% if form.code.errors %}
+                            <div class="text-danger mt-1 small">
+                                {% for error in form.code.errors %}
+                                {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="{{ form.percentage.id_for_label }}" class="form-label">{{ form.percentage.label }}</label>
+                            {{ form.percentage }}
+                            {% if form.percentage.errors %}
+                            <div class="text-danger mt-1 small">
+                                {% for error in form.percentage.errors %}
+                                {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="{{ form.valid_from.id_for_label }}" class="form-label">{{ form.valid_from.label }}</label>
+                            {{ form.valid_from }}
+                            {% if form.valid_from.errors %}
+                            <div class="text-danger mt-1 small">
+                                {% for error in form.valid_from.errors %}
+                                {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="{{ form.valid_to.id_for_label }}" class="form-label">{{ form.valid_to.label }}</label>
+                            {{ form.valid_to }}
+                            {% if form.valid_to.errors %}
+                            <div class="text-danger mt-1 small">
+                                {% for error in form.valid_to.errors %}
+                                {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3 form-check">
+                        {{ form.is_active }}
+                        <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
+                            {{ form.is_active.label }}
+                        </label>
+                        {% if form.is_active.errors %}
+                        <div class="text-danger mt-1 small">
+                            {% for error in form.is_active.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i> Save
+                        </button>
+                        <a href="{% url 'customers:management_discount_list' %}" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-light">
+                <h5 class="card-title">Help</h5>
+            </div>
+            <div class="card-body">
+                <ul class="mb-0">
+                    <li class="mb-2">Discount code must be unique.</li>
+                    <li class="mb-2">Discount percentage must be a number between 1 and 100.</li>
+                    <li class="mb-2">Start date must be before end date.</li>
+                    <li class="mb-2">Discount code can only be used by the selected customer.</li>
+                    <li class="mb-2">Inactive discount codes cannot be used, even if they are within the valid time range.</li>
+                </ul>
+            </div>
+        </div>
+        
+        {% if discount %}
+        <div class="card mt-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="card-title">Additional Information</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Created Date:</strong> {{ discount.created_at|date:"Y-m-d" }}</p>
+                <p><strong>Last Update:</strong> {{ discount.updated_at|date:"Y-m-d H:i" }}</p>
+                <p>
+                    <strong>Status:</strong>
+                    {% if discount.is_valid %}
+                    <span class="badge bg-success">Valid</span>
+                    {% else %}
+                    <span class="badge bg-danger">Invalid</span>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Generate random discount code
+        function generateDiscountCode() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let result = '';
+            for (let i = 0; i < 8; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        }
+        
+        // Add discount code generation button
+        const codeInput = document.querySelector('#{{ form.code.id_for_label }}');
+        if (codeInput) {
+            const generateButton = document.createElement('button');
+            generateButton.type = 'button';
+            generateButton.className = 'btn btn-sm btn-outline-secondary mt-2';
+            generateButton.innerHTML = '<i class="fas fa-magic me-1"></i> Generate Random Discount Code';
+            generateButton.addEventListener('click', function() {
+                codeInput.value = generateDiscountCode();
+            });
+            codeInput.parentNode.appendChild(generateButton);
+        }
+    });
+</script>
+{% endblock %} 

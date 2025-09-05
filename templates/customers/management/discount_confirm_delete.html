@@ -1,0 +1,48 @@
+{% extends 'customers/management/base.html' %}
+
+{% block title %}Delete Discount Code | Customer Management Panel{% endblock %}
+
+{% block page_title %}Delete Discount Code{% endblock %}
+
+{% block toolbar_buttons %}
+<a href="{% url 'customers:management_discount_list' %}" class="btn btn-secondary">
+    <i class="fas fa-arrow-left me-1"></i> Back to List
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="card border-danger">
+    <div class="card-header bg-danger text-white">
+        <h5 class="mb-0">Are you sure you want to delete the discount code "{{ discount.code }}"?</h5>
+    </div>
+    <div class="card-body">
+        <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            Warning: This operation is irreversible!
+        </div>
+        
+        <div class="mb-4">
+            <strong>Discount Code Information:</strong>
+            <ul class="mt-2">
+                <li>Code: {{ discount.code }}</li>
+                <li>Customer: {{ discount.customer.user.get_full_name }}</li>
+                <li>Discount Percentage: {{ discount.percentage }}%</li>
+                <li>Start Date: {{ discount.valid_from|date:"Y-m-d H:i" }}</li>
+                <li>End Date: {{ discount.valid_to|date:"Y-m-d H:i" }}</li>
+                <li>Status: {% if discount.is_active %}Active{% else %}Inactive{% endif %}</li>
+                <li>Created Date: {{ discount.created_at|date:"Y-m-d" }}</li>
+            </ul>
+        </div>
+        
+        <form method="post">
+            {% csrf_token %}
+            <div class="d-flex justify-content-between">
+                <button type="submit" class="btn btn-danger">
+                    <i class="fas fa-trash me-1"></i> Yes, Delete
+                </button>
+                <a href="{% url 'customers:management_discount_list' %}" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %} 

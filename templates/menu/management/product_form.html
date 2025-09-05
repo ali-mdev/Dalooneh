@@ -1,0 +1,150 @@
+{% extends 'menu/management/base.html' %}
+{% load static %}
+
+{% block title %}{{ title }} | Menu Management Panel{% endblock %}
+
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block toolbar_buttons %}
+<a href="{% url 'menu:management_product_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-right me-1"></i> Back to List
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.category.id_for_label }}" class="form-label">{{ form.category.label }}</label>
+                        {{ form.category }}
+                        {% if form.category.errors %}
+                        <div class="text-danger mt-1 small">
+                            {% for error in form.category.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.name.id_for_label }}" class="form-label">{{ form.name.label }}</label>
+                        {{ form.name }}
+                        {% if form.name.errors %}
+                        <div class="text-danger mt-1 small">
+                            {% for error in form.name.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.description.id_for_label }}" class="form-label">{{ form.description.label }}</label>
+                        {{ form.description }}
+                        {% if form.description.errors %}
+                        <div class="text-danger mt-1 small">
+                            {% for error in form.description.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.price.id_for_label }}" class="form-label">{{ form.price.label }} (USD)</label>
+                        {{ form.price }}
+                        {% if form.price.errors %}
+                        <div class="text-danger mt-1 small">
+                            {% for error in form.price.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.preparation_time.id_for_label }}" class="form-label">{{ form.preparation_time.label }}</label>
+                        {{ form.preparation_time }}
+                        {% if form.preparation_time.errors %}
+                        <div class="text-danger mt-1 small">
+                            {% for error in form.preparation_time.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.image.id_for_label }}" class="form-label">{{ form.image.label }}</label>
+                        {{ form.image }}
+                        {% if form.image.errors %}
+                        <div class="text-danger mt-1 small">
+                            {% for error in form.image.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="form-check">
+                                {{ form.is_available }}
+                                <label class="form-check-label" for="{{ form.is_available.id_for_label }}">
+                                    {{ form.is_available.label }}
+                                </label>
+                                {% if form.is_available.errors %}
+                                <div class="text-danger mt-1 small">
+                                    {% for error in form.is_available.errors %}
+                                    {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="form-check">
+                                {{ form.is_active }}
+                                <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
+                                    {{ form.is_active.label }}
+                                </label>
+                                {% if form.is_active.errors %}
+                                <div class="text-danger mt-1 small">
+                                    {% for error in form.is_active.errors %}
+                                    {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i> Save
+                    </button>
+                    <a href="{% url 'menu:management_product_list' %}" class="btn btn-outline-secondary">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        {% if product and product.image %}
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title">Current Image</h5>
+            </div>
+            <div class="card-body text-center">
+                <img src="{{ product.image.url }}" alt="{{ product.name }}" class="img-fluid rounded" style="max-height: 200px;">
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

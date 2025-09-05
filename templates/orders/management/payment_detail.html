@@ -1,0 +1,144 @@
+{% extends 'orders/management/base.html' %}
+{% load humanize %}
+
+{% block title %}Payment Details{% endblock %}
+
+{% block page_title %}Payment Details #{{ payment.id }}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Payment Information</h5>
+                <div class="btn-group">
+                    <a href="{% url 'orders:management_order_detail' payment.order.id %}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-file-invoice me-1"></i>
+                        View Order
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <table class="table table-striped">
+                            <tr>
+                                <th>Payment Number:</th>
+                                <td>{{ payment.id }}</td>
+                            </tr>
+                            <tr>
+                                <th>Order Number:</th>
+                                <td>{{ payment.order.order_number }}</td>
+                            </tr>
+                            <tr>
+                                <th>Customer:</th>
+                                <td>{{ payment.order.customer }}</td>
+                            </tr>
+                            <tr>
+                                <th>Payment Date:</th>
+                                <td>{{ payment.created_at|date:"Y/m/d H:i" }}</td>
+                            </tr>
+                            <tr>
+                                <th>Last Update:</th>
+                                <td>{{ payment.updated_at|date:"Y/m/d H:i" }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <table class="table table-striped">
+                            <tr>
+                                <th>Amount:</th>
+                                <td>{{ payment.amount|intcomma:False }} USD</td>
+                            </tr>
+                            <tr>
+                                <th>Payment Method:</th>
+                                <td>
+                                    {% for code, name in payment.PAYMENT_METHODS %}
+                                        {% if code == payment.payment_method %}{{ name }}{% endif %}
+                                    {% endfor %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Status:</th>
+                                <td>
+                                    <span class="badge {% if payment.status == 'completed' %}bg-success{% elif payment.status == 'pending' %}bg-warning{% else %}bg-danger{% endif %}">
+                                        {% for code, name in payment.STATUS_CHOICES %}
+                                            {% if code == payment.status %}{{ name }}{% endif %}
+                                        {% endfor %}
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Transaction ID:</th>
+                                <td>{{ payment.transaction_id|default:"-" }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Related Order Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <table class="table table-striped">
+                            <tr>
+                                <th>Order Number:</th>
+                                <td>{{ payment.order.order_number }}</td>
+                            </tr>
+                            <tr>
+                                <th>Order Status:</th>
+                                <td>
+                                    <span class="badge {% if payment.order.status == 'cancelled' %}bg-danger{% elif payment.order.status == 'delivered' %}bg-success{% elif payment.order.status == 'ready' %}bg-info{% else %}bg-warning{% endif %}">
+                                        {% for code, name in payment.order.STATUS_CHOICES %}
+                                            {% if code == payment.order.status %}{{ name }}{% endif %}
+                                        {% endfor %}
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Table:</th>
+                                <td>{{ payment.order.table }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <table class="table table-striped">
+                            <tr>
+                                <th>Total Amount:</th>
+                                <td>{{ payment.order.total_amount|intcomma:False }} USD</td>
+                            </tr>
+                            <tr>
+                                <th>Discount:</th>
+                                <td>{{ payment.order.discount_amount|intcomma:False }} USD</td>
+                            </tr>
+                            <tr>
+                                <th>Final Amount:</th>
+                                <td>{{ payment.order.final_amount|intcomma:False }} USD</td>
+                            </tr>
+                            <tr>
+                                <th>Payment Status:</th>
+                                <td>
+                                    <span class="badge {% if payment.order.payment_status == 'paid' %}bg-success{% elif payment.order.payment_status == 'partial' %}bg-warning{% else %}bg-danger{% endif %}">
+                                        {% for code, name in payment.order.PAYMENT_STATUS_CHOICES %}
+                                            {% if code == payment.order.payment_status %}{{ name }}{% endif %}
+                                        {% endfor %}
+                                    </span>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

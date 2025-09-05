@@ -1,0 +1,917 @@
+{% extends 'orders/management/base.html' %}
+{% load humanize %}
+{% load custom_filters %}
+
+{% block title %}Orders List{% endblock %}
+
+{% block page_title %}Orders List{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/material_blue.css">
+<style>
+    /* Elegant Order Management System - Core Styles */
+    :root {
+        --primary-color: #356FF7;
+        --primary-light: #F0F5FF;
+        --primary-gradient: linear-gradient(135deg, #356FF7 0%, #2352DE 100%);
+        --secondary-color: #6C757D;
+        --success-color: #0CD6A1;
+        --success-light: #EDFDF9;
+        --success-gradient: linear-gradient(135deg, #0CD6A1 0%, #07B98C 100%);
+        --warning-color: #FFAB2F;
+        --warning-light: #FFF8ED;
+        --warning-gradient: linear-gradient(135deg, #FFAB2F 0%, #FF8F00 100%);
+        --danger-color: #FF5C75;
+        --danger-light: #FFF0F3;
+        --danger-gradient: linear-gradient(135deg, #FF5C75 0%, #F03E5F 100%);
+        --info-color: #55C2FF;
+        --info-light: #F0FAFF;
+        --info-gradient: linear-gradient(135deg, #55C2FF 0%, #2AA7F0 100%);
+        --dark-color: #344767;
+        --light-bg: #F9FAFB;
+        --border-radius-sm: 0.5rem;
+        --border-radius: 1rem;
+        --border-radius-lg: 1.5rem;
+        --box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        --box-shadow-hover: 0 15px 35px rgba(0, 0, 0, 0.1);
+        --transition-slow: all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+        --transition: all 0.3s ease;
+        --font-main: 'Inter', 'Segoe UI', 'Tahoma', sans-serif;
+    }
+
+    /* Base container */
+    .orders-dashboard {
+        background: var(--light-bg);
+        border-radius: var(--border-radius-lg);
+        padding: 1.8rem;
+        box-shadow: var(--box-shadow);
+    }
+
+    /* Filter panel */
+    .filter-panel {
+        background: white;
+        border-radius: var(--border-radius);
+        border: none;
+        box-shadow: var(--box-shadow);
+        overflow: hidden;
+        transition: var(--transition);
+        margin-bottom: 1.8rem;
+        position: relative;
+    }
+    
+    .filter-panel:before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 5px;
+        background: var(--primary-gradient);
+        border-top-right-radius: 3px;
+        border-bottom-right-radius: 3px;
+    }
+
+    .filter-panel .panel-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1.2rem 1.5rem;
+        border-bottom: 1px solid rgba(0,0,0,0.03);
+    }
+
+    .filter-panel .panel-title {
+        margin: 0;
+        color: var(--dark-color);
+        font-weight: 700;
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+    }
+
+    .filter-panel .panel-title .icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        background: var(--primary-light);
+        color: var(--primary-color);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-left: 12px;
+        font-size: 1rem;
+    }
+
+    .filter-panel .panel-body {
+        padding: 1.5rem;
+        transition: var(--transition);
+    }
+
+    /* Orders table panel */
+    .orders-panel {
+        background: white;
+        border-radius: var(--border-radius);
+        border: none;
+        box-shadow: var(--box-shadow);
+        overflow: hidden;
+        position: relative;
+    }
+
+    .orders-panel:before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 5px;
+        background: var(--primary-gradient);
+        border-top-right-radius: 3px;
+        border-bottom-right-radius: 3px;
+    }
+
+    .orders-panel .panel-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1.2rem 1.5rem;
+        border-bottom: 1px solid rgba(0,0,0,0.03);
+    }
+
+    .orders-panel .panel-title {
+        margin: 0;
+        color: var(--dark-color);
+        font-weight: 700;
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+    }
+
+    .orders-panel .panel-title .icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        background: var(--primary-light);
+        color: var(--primary-color);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-left: 12px;
+        font-size: 1rem;
+    }
+
+    .orders-panel .panel-actions {
+        display: flex;
+        gap: 8px;
+    }
+
+    /* Table styling */
+    .elegant-table-container {
+        position: relative;
+        overflow-x: auto;
+    }
+    
+    .elegant-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        margin: 0;
+    }
+
+    .elegant-table thead {
+        background-color: var(--light-bg);
+    }
+
+    .elegant-table thead th {
+        padding: 1rem 1.2rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--secondary-color);
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        border: none;
+        position: relative;
+    }
+
+    .elegant-table tbody tr {
+        transition: var(--transition);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+    }
+
+    .elegant-table tbody tr:last-child {
+        border-bottom: none;
+    }
+
+    .elegant-table tbody tr:hover {
+        background-color: var(--light-bg);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    }
+
+    .elegant-table tbody td {
+        padding: 1.2rem;
+        vertical-align: middle;
+        color: var(--dark-color);
+        font-size: 0.95rem;
+        border: none;
+    }
+
+    /* Status tags */
+    .status-tag {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.5rem 0.9rem;
+        border-radius: 50px;
+        font-weight: 500;
+        font-size: 0.85rem;
+        color: white;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+        white-space: nowrap;
+    }
+
+    .status-tag i {
+        margin-left: 6px;
+        font-size: 0.85rem;
+    }
+
+    .status-tag.pending {
+        background: var(--warning-gradient);
+    }
+
+    .status-tag.confirmed {
+        background: var(--primary-gradient);
+        color: white;
+    }
+
+    .status-tag.preparing {
+        background: var(--info-gradient);
+    }
+
+    .status-tag.ready {
+        background: var(--info-gradient);
+    }
+
+    .status-tag.delivered {
+        background: var(--success-gradient);
+    }
+
+    .status-tag.cancelled {
+        background: var(--danger-gradient);
+    }
+
+    .status-tag.paid {
+        background: var(--success-gradient);
+    }
+
+    .status-tag.partial {
+        background: var(--warning-gradient);
+    }
+
+    .status-tag.unpaid {
+        background: var(--danger-gradient);
+    }
+
+    /* Order info */
+    .order-number {
+        font-family: var(--font-main);
+        font-weight: 700;
+        color: var(--primary-color);
+        direction: ltr;
+        text-align: right;
+        font-size: 1.05rem;
+    }
+
+    .customer-card {
+        display: flex;
+        align-items: center;
+    }
+
+    .customer-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: var(--primary-light);
+        color: var(--primary-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        margin-left: 12px;
+    }
+
+    .customer-info {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .customer-name {
+        font-weight: 600;
+        color: var(--dark-color);
+        margin-bottom: 3px;
+        font-size: 0.95rem;
+    }
+
+    .customer-meta {
+        color: var(--secondary-color);
+        font-size: 0.8rem;
+    }
+
+    /* Price display */
+    .price-display {
+        font-family: var(--font-main);
+        font-weight: 600;
+        color: var(--dark-color);
+        direction: ltr;
+        text-align: right;
+    }
+
+    .price-currency {
+        color: var(--secondary-color);
+        font-weight: normal;
+        font-size: 0.85rem;
+        margin-right: 3px;
+    }
+
+    /* Action buttons */
+    .btn-actions {
+        display: flex;
+        gap: 8px;
+    }
+
+    .btn-action {
+        width: 36px;
+        height: 36px;
+        border-radius: var(--border-radius-sm);
+        background: white;
+        color: var(--dark-color);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: var(--transition);
+        padding: 0;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-action:before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: var(--primary-gradient);
+        opacity: 0;
+        transition: var(--transition);
+        z-index: 0;
+    }
+
+    .btn-action:hover {
+        color: white;
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-action:hover:before {
+        opacity: 1;
+    }
+
+    .btn-action i {
+        position: relative;
+        z-index: 1;
+    }
+
+    .btn-action.view-action:hover:before {
+        background: var(--primary-gradient);
+    }
+
+    .btn-action.edit-action:hover:before {
+        background: var(--warning-gradient);
+    }
+
+    /* Form controls */
+    .elegant-form-control {
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        border-radius: var(--border-radius-sm);
+        padding: 0.7rem 1rem;
+        background-color: white;
+        color: var(--dark-color);
+        transition: var(--transition);
+        width: 100%;
+    }
+
+    .elegant-form-control:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(53, 111, 247, 0.15);
+    }
+
+    .elegant-form-select {
+        position: relative;
+    }
+
+    .elegant-form-select select {
+        appearance: none;
+        padding-right: 2.5rem;
+    }
+
+    .elegant-form-select:after {
+        content: '\f107';
+        font-family: "Font Awesome 5 Free";
+        font-weight: 900;
+        position: absolute;
+        top: 50%;
+        left: 1rem;
+        transform: translateY(-50%);
+        color: var(--secondary-color);
+        pointer-events: none;
+    }
+
+    .form-label {
+        margin-bottom: 0.5rem;
+        color: var(--dark-color);
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .elegant-btn {
+        padding: 0.7rem 1.5rem;
+        border-radius: var(--border-radius-sm);
+        font-weight: 600;
+        border: none;
+        transition: var(--transition);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        white-space: nowrap;
+    }
+
+    .elegant-btn i {
+        margin-left: 8px;
+    }
+
+    .elegant-btn-primary {
+        background: var(--primary-gradient);
+        color: white;
+        box-shadow: 0 5px 15px rgba(53, 111, 247, 0.15);
+    }
+
+    .elegant-btn-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(53, 111, 247, 0.25);
+    }
+
+    .elegant-btn-light {
+        background: white;
+        color: var(--dark-color);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.03);
+    }
+
+    .elegant-btn-light:hover {
+        background: var(--light-bg);
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+    }
+
+    .elegant-btn-outline {
+        background: transparent;
+        color: var(--primary-color);
+        border: 1px solid var(--primary-color);
+    }
+
+    .elegant-btn-outline:hover {
+        background: var(--primary-light);
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(53, 111, 247, 0.1);
+    }
+
+    /* Empty state */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+    }
+
+    .empty-state-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: var(--light-bg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+    }
+
+    .empty-state-icon i {
+        font-size: 2.5rem;
+        color: var(--secondary-color);
+        opacity: 0.5;
+    }
+
+    .empty-state-title {
+        font-weight: 600;
+        color: var(--dark-color);
+        margin-bottom: 0.8rem;
+    }
+
+    .empty-state-desc {
+        max-width: 400px;
+        margin: 0 auto;
+        color: var(--secondary-color);
+    }
+
+    /* Responsive filters */
+    .filter-toggle {
+        display: none;
+        margin-bottom: 1rem;
+        width: 100%;
+    }
+
+    @media (max-width: 992px) {
+        .filter-panel.collapsible {
+            display: none;
+        }
+        
+        .filter-panel.collapsible.show {
+            display: block;
+        }
+        
+        .filter-toggle {
+            display: block;
+        }
+    }
+
+    /* Datepicker customization */
+    .flatpickr-calendar.hasTime.arrowTop:after {
+        border-bottom-color: var(--primary-color) !important;
+    }
+
+    .flatpickr-day.selected, 
+    .flatpickr-day.startRange, 
+    .flatpickr-day.endRange, 
+    .flatpickr-day.selected.inRange, 
+    .flatpickr-day.startRange.inRange, 
+    .flatpickr-day.endRange.inRange, 
+    .flatpickr-day.selected:focus, 
+    .flatpickr-day.startRange:focus, 
+    .flatpickr-day.endRange:focus, 
+    .flatpickr-day.selected:hover, 
+    .flatpickr-day.startRange:hover, 
+    .flatpickr-day.endRange:hover, 
+    .flatpickr-day.selected.prevMonthDay, 
+    .flatpickr-day.startRange.prevMonthDay, 
+    .flatpickr-day.endRange.prevMonthDay, 
+    .flatpickr-day.selected.nextMonthDay, 
+    .flatpickr-day.startRange.nextMonthDay, 
+    .flatpickr-day.endRange.nextMonthDay {
+        background: var(--primary-gradient) !important;
+        border-color: var(--primary-color) !important;
+        box-shadow: 0 5px 15px rgba(53, 111, 247, 0.2) !important;
+    }
+
+    /* Table row hover */
+    .elegant-table tbody tr {
+        position: relative;
+    }
+
+    .elegant-table tbody tr:before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 3px;
+        height: 100%;
+        background: var(--primary-gradient);
+        opacity: 0;
+        transition: var(--transition);
+    }
+
+    .elegant-table tbody tr:hover:before {
+        opacity: 1;
+    }
+
+    /* Date column */
+    .date-display {
+        display: flex;
+        flex-direction: column;
+        line-height: 1.4;
+    }
+
+    .date-primary {
+        font-weight: 600;
+        color: var(--dark-color);
+    }
+
+    .date-secondary {
+        color: var(--secondary-color);
+        font-size: 0.8rem;
+    }
+    
+    /* Mobile optimizations */
+    @media (max-width: 768px) {
+        .orders-dashboard {
+            padding: 1rem;
+        }
+        
+        .filter-panel .panel-body,
+        .orders-panel .panel-body {
+            padding: 1rem;
+        }
+        
+        .elegant-table thead th, 
+        .elegant-table tbody td {
+            padding: 0.8rem;
+        }
+        
+        .status-tag {
+            padding: 0.4rem 0.7rem;
+            font-size: 0.75rem;
+        }
+        
+        .customer-avatar {
+            width: 32px;
+            height: 32px;
+        }
+    }
+    
+    /* Print styles */
+    @media print {
+        .filter-panel, .filter-toggle, .panel-actions, .btn-actions {
+            display: none !important;
+        }
+        
+        .orders-dashboard {
+            background: none;
+            padding: 0;
+            margin: 0;
+            box-shadow: none;
+        }
+        
+        .orders-panel {
+            background: none;
+            box-shadow: none;
+        }
+        
+        .orders-panel:before {
+            display: none;
+        }
+        
+        .elegant-table tbody tr:hover {
+            background: none;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .elegant-table tbody tr:before {
+            display: none;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="orders-dashboard">
+    <button class="elegant-btn elegant-btn-primary filter-toggle" id="toggleFilters">
+        <i class="fas fa-sliders-h"></i> Show/Hide Filters
+    </button>
+
+    <div class="filter-panel collapsible" id="filtersPanel">
+        <div class="panel-header">
+            <h5 class="panel-title">
+                <span class="icon"><i class="fas fa-filter"></i></span>
+                Orders Filters
+            </h5>
+            <button type="button" class="btn-close" id="closeFilters" aria-label="Close"></button>
+        </div>
+        <div class="panel-body">
+            <form method="get" action="{% url 'orders:management_order_list' %}" id="filter-form">
+                <div class="row">
+                    <div class="col-md-4 col-lg-3 mb-3">
+                        <label for="status" class="form-label">Order Status</label>
+                        <div class="elegant-form-select">
+                            <select class="elegant-form-control auto-submit" id="status" name="status">
+                                <option value="">All Statuses</option>
+                                {% for code, name in status_choices %}
+                                <option value="{{ code }}" {% if selected_status == code %}selected{% endif %}>{{ name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-lg-3 mb-3">
+                        <label for="payment_status" class="form-label">Payment Status</label>
+                        <div class="elegant-form-select">
+                            <select class="elegant-form-control auto-submit" id="payment_status" name="payment_status">
+                                <option value="">All Statuses</option>
+                                {% for code, name in payment_status_choices %}
+                                <option value="{{ code }}" {% if selected_payment_status == code %}selected{% endif %}>{{ name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-lg-3 mb-3">
+                        <label for="customer_search" class="form-label">Customer Search</label>
+                        <div class="input-group">
+                            <input type="text" class="elegant-form-control" id="customer_search" name="q" value="{{ request.GET.q }}" placeholder="Name, phone or customer code">
+                            <button class="elegant-btn elegant-btn-primary" type="submit">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-lg-3 mb-3">
+                        <label for="date_from" class="form-label">From Date</label>
+                        <input type="text" class="elegant-form-control date-picker" id="date_from" name="date_from" value="{{ date_from }}" placeholder="Select date">
+                    </div>
+                    <div class="col-md-4 col-lg-3 mb-3">
+                        <label for="date_to" class="form-label">To Date</label>
+                        <input type="text" class="elegant-form-control date-picker" id="date_to" name="date_to" value="{{ date_to }}" placeholder="Select date">
+                    </div>
+                </div>
+                <div class="row mt-2">
+                    <div class="col-12 text-end">
+                        <button type="submit" class="elegant-btn elegant-btn-primary">
+                            <i class="fas fa-filter"></i>
+                            Apply Filter
+                        </button>
+                        <a href="{% url 'orders:management_order_list' %}" class="elegant-btn elegant-btn-light ms-2">
+                            <i class="fas fa-times"></i>
+                            Clear Filters
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="orders-panel">
+        <div class="panel-header">
+            <h5 class="panel-title">
+                <span class="icon"><i class="fas fa-clipboard-list"></i></span>
+                Orders List
+            </h5>
+            <div class="panel-actions">
+                <a href="{% url 'orders:management_quick_order' %}" class="elegant-btn elegant-btn-primary">
+                    <i class="fas fa-plus"></i> Quick Order
+                </a>
+                <button class="elegant-btn elegant-btn-light" onclick="window.print()">
+                    <i class="fas fa-print"></i> Print
+                </button>
+            </div>
+        </div>
+        <div class="elegant-table-container">
+            <table class="elegant-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Customer</th>
+                        <th>Table</th>
+                        <th>Final Amount</th>
+                        <th>Status</th>
+                        <th>Payment</th>
+                        <th>Registration Time</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                    <tr>
+                        <td><span class="order-number">#{{ order.order_number }}</span></td>
+                        <td>
+                            <div class="customer-card">
+                                <div class="customer-avatar">
+                                    {{ order.customer.name|first|upper }}
+                                </div>
+                                <div class="customer-info">
+                                    <span class="customer-name">{{ order.customer }}</span>
+                                    {% if order.customer.phone %}
+                                    <span class="customer-meta">{{ order.customer.phone }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </td>
+                        <td>{% if order.table %}{{ order.table }}{% else %}<span class="badge bg-secondary">No Table</span>{% endif %}</td>
+                        <td>
+                            <div class="price-display">
+                                {{ order.final_amount|intcomma:False }}
+                                <span class="price-currency">USD</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="status-tag {{ order.status }}">
+                                {% if order.status == 'cancelled' %}
+                                    <i class="fas fa-times-circle"></i>
+                                {% elif order.status == 'delivered' %}
+                                    <i class="fas fa-check-circle"></i>
+                                {% elif order.status == 'ready' %}
+                                    <i class="fas fa-utensils"></i>
+                                {% elif order.status == 'preparing' %}
+                                    <i class="fas fa-fire"></i>
+                                {% elif order.status == 'confirmed' %}
+                                    <i class="fas fa-clipboard-check"></i>
+                                {% else %}
+                                    <i class="fas fa-clock"></i>
+                                {% endif %}
+                                {% for code, name in status_choices %}
+                                    {% if code == order.status %}{{ name }}{% endif %}
+                                {% endfor %}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="status-tag {{ order.payment_status }}">
+                                {% if order.payment_status == 'paid' %}
+                                    <i class="fas fa-check-circle"></i>
+                                {% elif order.payment_status == 'partial' %}
+                                    <i class="fas fa-percentage"></i>
+                                {% else %}
+                                    <i class="fas fa-times-circle"></i>
+                                {% endif %}
+                                {% for code, name in payment_status_choices %}
+                                    {% if code == order.payment_status %}{{ name }}{% endif %}
+                                {% endfor %}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="date-display">
+                                <span class="date-primary">{{ order.created_at|date:"H:i" }}</span>
+                                <span class="date-secondary">{{ order.created_at|date:"Y/m/d" }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="btn-actions">
+                                <a href="{% url 'orders:management_order_detail' order.id %}" class="btn-action view-action" title="View Details">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{% url 'orders:management_order_edit' order.id %}" class="btn-action edit-action" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center">No orders found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fa.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize date pickers with enhanced styling
+        flatpickr(".date-picker", {
+            locale: "en",
+            dateFormat: "Y/m/d",
+            calendar: "gregorian",
+            allowInput: true,
+            disableMobile: "true",
+            animate: true
+        });
+
+        // Filter panel toggle
+        const filterToggle = document.getElementById('toggleFilters');
+        const closeFilters = document.getElementById('closeFilters');
+        const filtersPanel = document.getElementById('filtersPanel');
+        
+        if (filterToggle) {
+            filterToggle.addEventListener('click', function() {
+                filtersPanel.classList.toggle('show');
+            });
+        }
+        
+        if (closeFilters) {
+            closeFilters.addEventListener('click', function() {
+                filtersPanel.classList.remove('show');
+            });
+        }
+        
+        // Auto-submit for select dropdowns
+        document.querySelectorAll('select.auto-submit').forEach(function(select) {
+            select.addEventListener('change', function() {
+                document.getElementById('filter-form').submit();
+            });
+        });
+        
+        // Add hover effects to table rows
+        const tableRows = document.querySelectorAll('.elegant-table tbody tr');
+        tableRows.forEach(row => {
+            row.addEventListener('mouseover', function() {
+                this.style.transform = 'translateY(-2px)';
+                this.style.boxShadow = '0 5px 15px rgba(0, 0, 0, 0.05)';
+            });
+            
+            row.addEventListener('mouseout', function() {
+                this.style.transform = 'translateY(0)';
+                this.style.boxShadow = 'none';
+            });
+        });
+    });
+</script>
+{% endblock %} 

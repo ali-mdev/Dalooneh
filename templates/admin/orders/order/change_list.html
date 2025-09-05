@@ -1,0 +1,16 @@
+{% extends "admin/change_list.html" %}
+{% load i18n %}
+
+{% block object-tools %}
+    <div style="margin-bottom: 20px; padding: 15px; background-color: #f8f8f8; border-radius: 4px; border: 1px solid #ddd;">
+        <h4 style="margin-top: 0;">Search orders by customer phone number</h4>
+        <form method="post" action="{% url 'admin:search_by_phone' %}">
+            {% csrf_token %}
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <input type="text" name="phone_number" placeholder="Enter phone number" style="padding: 8px; border-radius: 4px; border: 1px solid #ddd; flex-grow: 1;" required>
+                <button type="submit" style="padding: 8px 15px; background-color: #79aec8; border: none; border-radius: 4px; color: white; cursor: pointer;">Search</button>
+            </div>
+        </form>
+    </div>
+    {{ block.super }}
+{% endblock %} 

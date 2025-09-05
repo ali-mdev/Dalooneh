@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Dalooneh - Restaurant Menu{% endblock %}</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="description" content="Dalooneh Restaurant Online Ordering System - Easy and Fast Food Ordering">
+    <meta name="theme-color" content="#033F38">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Dalooneh">
+    <meta name="msapplication-TileColor" content="#033F38">
+    <meta name="msapplication-TileImage" content="{% static 'images/icons/icon-144x144.png' %}">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="{% static 'manifest.json' %}">
+    
+    <!-- PWA Icons -->
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'images/icons/icon-96x96.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'images/icons/icon-72x72.png' %}">
+    <link rel="apple-touch-icon" href="{% static 'images/icons/icon-192x192.png' %}">
+    <link rel="apple-touch-icon" sizes="152x152" href="{% static 'images/icons/icon-152x152.png' %}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'images/icons/icon-192x192.png' %}">
+    <link rel="apple-touch-icon" sizes="167x167" href="{% static 'images/icons/icon-152x152.png' %}">
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+        }
+        .table-info {
+            background-color: #e3f2fd;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .product-card {
+            transition: transform 0.2s;
+        }
+        .product-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        /* PWA Offline Indicator */
+        .offline-indicator {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: #ff6b6b;
+            color: white;
+            text-align: center;
+            padding: 8px;
+            z-index: 9999;
+            transform: translateY(-100%);
+            transition: transform 0.3s ease;
+        }
+        
+        .offline-indicator.show {
+            transform: translateY(0);
+        }
+        
+        /* PWA Install Button Styles */
+        .pwa-install-button {
+            transition: all 0.3s ease;
+        }
+        
+        .pwa-install-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(3, 63, 56, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <!-- Offline Indicator -->
+    <div id="offline-indicator" class="offline-indicator">
+        <i class="bi bi-wifi-off me-2"></i>
+        You are offline - Some features may be limited
+    </div>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'menu:menu' %}">Dalooneh</a>
+            {% if table %}
+            <div class="text-white">
+                Table Number: {{ table.number }}
+            </div>
+            {% endif %}
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarContent">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                    {% if request.user.is_authenticated and request.user.is_superuser %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="staffDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-gear-fill me-1"></i>
+                            Management
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="{% url 'staff:management_index' %}">Main Management Panel</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{% url 'tables:management_dashboard' %}">Table Management</a></li>
+                            <li><a class="dropdown-item" href="{% url 'menu:management_dashboard' %}">Menu Management</a></li>
+                            <li><a class="dropdown-item" href="{% url 'orders:management_dashboard' %}">Order Management</a></li>
+                            <li><a class="dropdown-item" href="{% url 'customers:management_dashboard' %}">Customer Management</a></li>
+                            <li><a class="dropdown-item" href="{% url 'staff:management_index' %}">Staff Management</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{% url 'admin:index' %}">Django Admin Panel</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{% url 'management_logout' %}">
+                                <i class="bi bi-box-arrow-right me-1"></i>Logout
+                            </a></li>
+                        </ul>
+                    </li>
+                    {% elif not request.user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'management_login' %}">
+                            <i class="bi bi-shield-lock me-1"></i>
+                            Management Login
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- Flash messages -->
+        {% if messages %}
+        <div class="messages mb-4">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        {% block content %}
+        {% endblock %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{% static 'js/ios-messagebox.js' %}"></script>
+    <script src="{% static 'js/pwa-install.js' %}"></script>
+    
+    <script>
+        // PWA Offline/Online Status Handler
+        function updateOnlineStatus() {
+            const offlineIndicator = document.getElementById('offline-indicator');
+            if (navigator.onLine) {
+                offlineIndicator.classList.remove('show');
+            } else {
+                offlineIndicator.classList.add('show');
+            }
+        }
+        
+        // Check initial status
+        updateOnlineStatus();
+        
+        // Listen for online/offline events
+        window.addEventListener('online', updateOnlineStatus);
+        window.addEventListener('offline', updateOnlineStatus);
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html> 

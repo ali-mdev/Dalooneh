@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en" dir="ltr">
+
+<!-- Mirrored from themesflat.co/html/coffeemonster/coffeeMonster-drink-app/index.html by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 17 Jul 2024 13:08:18 GMT -->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dalooneh - Restaurant Menu | Online Food Ordering</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="description" content="Dalooneh Restaurant Online Ordering System - Easy and Fast Food Ordering">
+    <meta name="theme-color" content="#033F38">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Dalooneh">
+    <meta name="msapplication-TileColor" content="#033F38">
+    <meta name="msapplication-TileImage" content="{% static 'images/icons/icon-144x144.png' %}">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="{% static 'manifest.json' %}">
+    
+    <!-- PWA Icons -->
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'images/icons/icon-96x96.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'images/icons/icon-72x72.png' %}">
+    <link rel="apple-touch-icon" href="{% static 'images/icons/icon-192x192.png' %}">
+    <link rel="apple-touch-icon" sizes="152x152" href="{% static 'images/icons/icon-152x152.png' %}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'images/icons/icon-192x192.png' %}">
+    <link rel="apple-touch-icon" sizes="167x167" href="{% static 'images/icons/icon-152x152.png' %}">
+    
+    <link rel="stylesheet" href="{% static 'css/boostrap.min.css' %}">
+    <link rel="stylesheet"type="text/css" href="{% static 'css/nouislider.min.css' %}"/>
+    <link rel="stylesheet" href="{% static 'css/swiper-bundle.min.css' %}">
+    <link rel="stylesheet"type="text/css" href="{% static 'css/styles.css' %}"/>
+    <!-- Icons -->
+    <link rel="stylesheet" href="{% static 'fonts/font-icons.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Favicon and Touch Icons  -->
+    <link rel="shortcut icon" href="{% static 'images/LOGO.png' %}" />
+    <link rel="apple-touch-icon-precomposed" href="{% static 'images/LOGO.png' %}" />
+
+    <style>
+        /* Body background with faded logo */
+        body:after {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('{% static "images/LOGO.png" %}');
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: contain;
+            opacity: 0.03;
+            z-index: -1;
+            pointer-events: none;
+        }
+        
+        /* Custom footer menu styling - Professional Design */
+        .menubar-footer.footer-fixed {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.08);
+            padding: 8px 0 12px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+        
+        .menubar-footer .inner {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 60px;
+            padding: 0 20px;
+            margin: 0;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        
+        .menubar-footer .inner li {
+            width: auto;
+            position: relative;
+            flex: 1;
+            display: flex;
+            justify-content: center;
+        }
+        
+        .menubar-footer .inner li a {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 20px;
+            text-decoration: none;
+            border-radius: 16px;
+            font-weight: 600;
+            font-size: 12px;
+            color: #6B7280;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            min-height: 60px;
+            background: transparent;
+        }
+        
+        .menubar-footer .inner li a::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(3, 63, 56, 0.1), rgba(3, 63, 56, 0.05));
+            border-radius: 16px;
+            opacity: 0;
+            transform: scale(0.8);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .menubar-footer .inner li a span {
+            font-size: 22px;
+            margin-bottom: 4px;
+            color: #9CA3AF;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            z-index: 2;
+        }
+        
+        .menubar-footer .inner li a.active::before,
+        .menubar-footer .inner li a:hover::before {
+            opacity: 1;
+            transform: scale(1);
+        }
+        
+        .menubar-footer .inner li a.active,
+        .menubar-footer .inner li a:hover {
+            color: #033F38;
+            transform: translateY(-2px);
+        }
+        
+        .menubar-footer .inner li a.active span,
+        .menubar-footer .inner li a:hover span {
+            color: #033F38;
+            transform: scale(1.1);
+        }
+        
+        /* Active state indicator */
+        .menubar-footer .inner li a.active::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 4px;
+            background: #033F38;
+            border-radius: 50%;
+            animation: activeIndicator 0.6s ease;
+            z-index: 4;
+        }
+        
+        @keyframes activeIndicator {
+            0% {
+                opacity: 0;
+                transform: translateX(-50%) scale(0);
+            }
+            50% {
+                opacity: 1;
+                transform: translateX(-50%) scale(1.5);
+            }
+            100% {
+                opacity: 1;
+                transform: translateX(-50%) scale(1);
+            }
+        }
+        
+        /* Professional cart badge design */
+        .menubar-footer .inner li a .cart-count {
+            position: absolute;
+            top: 8px;
+            right: 16px;
+            background: linear-gradient(135deg, #EF4444, #DC2626);
+            color: white;
+            border-radius: 12px;
+            min-width: 20px;
+            height: 20px;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            z-index: 999;
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+            border: 2px solid rgba(255, 255, 255, 0.9);
+            animation: cartBadgeAppear 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        
+        @keyframes cartBadgeAppear {
+            0% {
+                opacity: 0;
+                transform: scale(0) rotate(180deg);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1) rotate(0deg);
+            }
+        }
+        
+        /* Hover effect for cart badge */
+        .menubar-footer .inner li a:hover .cart-count {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.5);
+        }
+        
+        /* Ripple effect on tap/click */
+        .menubar-footer .inner li a {
+            overflow: hidden;
+        }
+        
+        .menubar-footer .inner li a::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(3, 63, 56, 0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+            z-index: 1;
+        }
+        
+        .menubar-footer .inner li a:active::after {
+            width: 120px;
+            height: 120px;
+        }
+        
+        /* Ensure text stays above ripple */
+        .menubar-footer .inner li a span,
+        .menubar-footer .inner li a .cart-count {
+            position: relative;
+            z-index: 3;
+        }
+        
+        /* Smooth entrance animation for the entire footer */
+        .menubar-footer.footer-fixed {
+            animation: footerSlideUp 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        @keyframes footerSlideUp {
+            0% {
+                transform: translateY(100%);
+                opacity: 0;
+            }
+            100% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        /* Contact Footer Styling */
+        .contact-footer {
+            background: linear-gradient(135deg, #033F38, #044A42);
+            padding: 20px 0;
+            margin-bottom: 80px; /* Space for the menubar-footer */
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .contact-footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('{% static "images/LOGO.png" %}') center/contain no-repeat;
+            opacity: 0.05;
+            z-index: 1;
+        }
+        
+        .contact-footer .container {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .contact-footer h3 {
+            color: #F7ECD5;
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 22px;
+            font-weight: 700;
+        }
+        
+        .contact-icons {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .contact-icon {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: #F7ECD5;
+            transition: all 0.3s ease;
+            padding: 15px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            min-width: 80px;
+        }
+        
+        .contact-icon:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.2);
+            color: #F7ECD5;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+        
+        .contact-icon i {
+            font-size: 28px;
+            margin-bottom: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .contact-icon span {
+            font-size: 12px;
+            font-weight: 600;
+            text-align: center;
+        }
+        
+        .contact-icon:hover i {
+            transform: scale(1.2);
+        }
+        
+        /* Specific colors for each platform */
+        .contact-icon.phone:hover {
+            background: rgba(34, 197, 94, 0.2);
+            border-color: rgba(34, 197, 94, 0.4);
+        }
+        
+        .contact-icon.instagram:hover {
+            background: linear-gradient(45deg, rgba(225, 48, 108, 0.2), rgba(255, 77, 64, 0.2));
+            border-color: rgba(225, 48, 108, 0.4);
+        }
+        
+        .contact-icon.whatsapp:hover {
+            background: rgba(37, 211, 102, 0.2);
+            border-color: rgba(37, 211, 102, 0.4);
+        }
+        
+        @media (max-width: 576px) {
+            .contact-footer {
+                padding: 15px 0;
+                margin-bottom: 70px;
+            }
+            
+            .contact-footer h3 {
+                font-size: 18px;
+                margin-bottom: 20px;
+            }
+            
+            .contact-icons {
+                gap: 20px;
+            }
+            
+            .contact-icon {
+                padding: 12px;
+                min-width: 70px;
+            }
+            
+            .contact-icon i {
+                font-size: 24px;
+                margin-bottom: 6px;
+            }
+            
+            .contact-icon span {
+                font-size: 11px;
+            }
+        }
+        
+        /* Header logo styling */
+        .logo-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 5px 15px;
+            width: 100%;
+            direction: ltr;
+            background-color: #F7ECD5; /* Light cream color */
+            height: 85px; /* Fixed height for container */
+            overflow: hidden; /* Prevent logo from expanding container */
+        }
+        
+        .header-logo {
+            max-height: 95px;
+            width: auto;
+            object-fit: contain;
+            order: 2;
+            margin-right: 10px;
+            transform: scale(1); /* Reset scale to normal */
+        }
+        
+        .inner-headerbar h1 {
+            order: 1;
+            color: #5A3E2B; /* Darker brown text for contrast */
+            font-size: 24px;
+            margin: 0;
+        }
+        
+        .inner-headerbar {
+            padding: 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        @media (max-width: 576px) {
+            .logo-container {
+                height: 70px; /* Fixed height for mobile */
+            }
+            .header-logo {
+                max-height: 85px; /* Adjusted for mobile */
+                transform: scale(1); /* Reset scale to normal */
+            }
+            
+            /* Professional mobile footer design */
+            .menubar-footer.footer-fixed {
+                padding: 6px 0 10px;
+                background: rgba(255, 255, 255, 0.98);
+            }
+            
+            .menubar-footer .inner {
+                gap: 40px;
+                padding: 0 15px;
+                max-width: 100%;
+            }
+            
+            .menubar-footer .inner li a {
+                padding: 8px 16px;
+                font-size: 11px;
+                min-height: 50px;
+                border-radius: 12px;
+            }
+            
+            .menubar-footer .inner li a span {
+                font-size: 20px;
+                margin-bottom: 3px;
+            }
+            
+            .menubar-footer .inner li a .cart-count {
+                min-width: 18px;
+                height: 18px;
+                font-size: 10px;
+                top: 6px;
+                right: 12px;
+                border-radius: 10px;
+            }
+            
+            .menubar-footer .inner li a.active::after {
+                bottom: -6px;
+                width: 3px;
+                height: 3px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .menubar-footer .inner {
+                gap: 30px;
+                padding: 0 10px;
+            }
+            
+            .menubar-footer .inner li a {
+                padding: 6px 12px;
+                min-height: 45px;
+            }
+            
+            .menubar-footer .inner li a span {
+                font-size: 18px;
+            }
+        }
+    </style>
+
+    <title>Home</title>
+</head>
+
+<body class="appHome">
+        <!-- preloade -->
+        <div class="preload preload-container">
+            <div class="preload-logo">
+              <div class="spinner"></div>
+            </div>
+          </div>
+        <!-- /preload -->
+
+  
+        <div class="app home-2">
+            <div class="inner-headerbar fixed-top bg-primary st1">
+                <div class="logo-container d-flex justify-content-center">
+                    <img src="{% static 'images/LOGO.png' %}" alt="Dalooneh" class="header-logo">
+                </div>
+            </div>
+            
+    {% block content %}
+    {% endblock %}
+</div>
+    
+<!-- Contact Footer -->
+<div class="contact-footer">
+    <div class="container">
+        <h3>Contact Us</h3>
+        <div class="contact-icons">
+            <div class="contact-icon phone">
+                <i class="fas fa-phone"></i>
+                <span>Call</span>
+            </div>
+            <div class="contact-icon instagram">
+                <i class="fab fa-instagram"></i>
+                <span>Instagram</span>
+            </div>
+            <div class="contact-icon whatsapp">
+                <i class="fab fa-whatsapp"></i>
+                <span>WhatsApp</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scan QR Code Prompt Modal -->
+<div class="modal fade" id="scanQrModal" tabindex="-1" aria-labelledby="scanQrModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 16px; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.2);">
+            <div class="modal-header" style="background-color: #033F38; color: white; border-bottom: none; padding: 18px 20px;">
+                <h5 class="modal-title" id="scanQrModalLabel" style="font-weight: 600; font-size: 18px;">Notice</h5>
+                <button type="button" class="btn-close bg-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <div style="margin-bottom: 20px;" id="scan-qr-content">
+                    <div style="font-size: 70px; color: #033F38; margin-bottom: 20px;">
+                        <i class="fas fa-qrcode" id="modal-icon-qr"></i>
+                        <i class="fas fa-shopping-cart" id="modal-icon-cart" style="display: none;"></i>
+                    </div>
+                    <h4 style="font-size: 20px; margin-bottom: 15px; color: #033F38; font-weight: 700;" id="modal-title">Please scan the table QR code first</h4>
+                    <p class="mb-0" style="color: #666; font-size: 15px;" id="modal-message">To use the shopping cart and place orders, you must first scan the QR code on your table.</p>
+                </div>
+            </div>
+            <div class="modal-footer d-flex justify-content-center border-top-0 pt-0 pb-4">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="padding: 10px 20px; border-radius: 8px; background-color: #6c757d; color: white; border: none; margin-left: 10px;">Close</button>
+                <a href="/" class="btn btn-primary" style="padding: 10px 20px; border-radius: 8px; background-color: #033F38; color: white; border: none;">View Products</a>
+            </div>
+        </div>
+    </div>
+</div>
+    
+    <div class="menubar-footer footer-fixed">
+        <ul class="inner">
+            <li><a href="{% url 'home' %}" class="{% if request.path == '/' %}active{% endif %}">
+                <span class="icon-home"></span> Home
+            </a></li>
+            <li><a href="javascript:void(0)" onclick="handleCartClick()" class="{% if 'cart' in request.path %}active{% endif %}" id="cart-icon-link">
+                <span class="icon-buy"></span> Cart
+                <span class="cart-count" id="cart-count" style="{% if cart_count and cart_count > 0 %}display: flex;{% else %}display: none;{% endif %}">{{ cart_count|default:"0" }}</span>
+            </a></li>
+        </ul>
+    </div>
+    
+
+    
+    <!-- jQuery debe cargarse primero -->
+    <script type="text/javascript" src="{% static 'js/jquery.min.js' %}"></script>
+    <!-- Luego Bootstrap -->
+    <script type="text/javascript" src="{% static 'js/bootstrap.min.js' %}"></script>
+    <!-- Otros scripts -->
+    <script type="text/javascript" src="{% static 'js/swiper-bundle.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/carousel.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/nouislider.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/sidebar.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/cart.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/main.js' %}"></script>
+    <script src="{% static 'js/pwa-install.js' %}"></script>
+
+    <script>
+      // Cart debug
+      document.addEventListener('DOMContentLoaded', function() {
+        console.log('Page loaded - Checking cart status');
+        const cartCountElement = document.getElementById('cart-count');
+        if (cartCountElement) {
+          console.log('Cart counter element found:', cartCountElement);
+          console.log('Counter text:', cartCountElement.textContent);
+          console.log('Display status:', cartCountElement.style.display);
+        } else {
+          console.log('Cart counter element not found!');
+        }
+
+        // Add event listener for testing
+        document.addEventListener('cartUpdated', function(event) {
+          console.log('cartUpdated event received!', event.detail);
+        });
+        
+        // Check for error messages and show QR scan modal if needed
+        {% if messages %}
+            {% for message in messages %}
+                var scanQrModal = document.getElementById('scanQrModal');
+                if (scanQrModal) {
+                    var modalTitle = document.getElementById('modal-title');
+                    var modalMessage = document.getElementById('modal-message');
+                    var modalIconQr = document.getElementById('modal-icon-qr');
+                    var modalIconCart = document.getElementById('modal-icon-cart');
+                    
+                    // Check message content to determine which type of error to show
+                    if ('{{ message }}' && '{{ message }}'.indexOf('Table QR Code') !== -1) {
+                        // Show QR scan message
+                        modalTitle.textContent = 'Please scan the table QR code first';
+                        modalMessage.textContent = 'To use the shopping cart and place orders, you must first scan the QR code on your table.';
+                        modalIconQr.style.display = 'inline-block';
+                        modalIconCart.style.display = 'none';
+                    } else if ('{{ message }}' && '{{ message }}'.indexOf('Your cart is empty') !== -1) {
+                        // Show empty cart message
+                        modalTitle.textContent = 'Your cart is empty';
+                        modalMessage.textContent = 'Please add products to your cart.';
+                        modalIconQr.style.display = 'none';
+                        modalIconCart.style.display = 'inline-block';
+                    }
+                    
+                    var bsModal = new bootstrap.Modal(scanQrModal);
+                    bsModal.show();
+                }
+            {% endfor %}
+        {% endif %}
+      });
+      
+      function handleCartClick() {
+        // Get cart count from the span
+        const cartCountElement = document.getElementById('cart-count');
+        const cartCount = cartCountElement ? parseInt(cartCountElement.textContent || '0') : 0;
+        
+        // If cart is empty (no session or empty cart)
+        if (cartCount === 0 || cartCountElement.style.display === 'none') {
+          // Check if scan QR modal exists
+          const scanQrModal = document.getElementById('scanQrModal');
+          if (scanQrModal) {
+            // Show the modal
+            const bsModal = new bootstrap.Modal(scanQrModal);
+            
+            // Check if user has scanned QR code but cart is empty
+            // This needs to be checked with session data
+            {% if request.session.table_token %}
+              // User has scanned QR but cart is empty
+              document.getElementById('modal-title').textContent = 'Your cart is empty';
+              document.getElementById('modal-message').textContent = 'Please add products to your cart.';
+              document.getElementById('modal-icon-qr').style.display = 'none';
+              document.getElementById('modal-icon-cart').style.display = 'inline-block';
+            {% else %}
+              // User has not scanned QR code
+              document.getElementById('modal-title').textContent = 'Please scan the table QR code first';
+              document.getElementById('modal-message').textContent = 'To use the shopping cart and place orders, you must first scan the QR code on your table.';
+              document.getElementById('modal-icon-qr').style.display = 'inline-block';
+              document.getElementById('modal-icon-cart').style.display = 'none';
+            {% endif %}
+            
+            bsModal.show();
+          } else {
+            // Fallback to cart page if modal doesn't exist
+            window.location.href = "{% url 'tables:view_cart' %}";
+          }
+        } else {
+          // Navigate to cart page if there are items
+          window.location.href = "{% url 'tables:view_cart' %}";
+        }
+      }
+    </script>
+    
+</body>
+
+<!-- Mirrored from themesflat.co/html/coffeemonster/coffeeMonster-drink-app/index.html by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 17 Jul 2024 12:59:19 GMT -->
+</html>

@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}QR Code Test - Table {{ table.number }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">QR Code Test - Table {{ table.number }}</h4>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <img src="{{ qr_url }}" alt="QR Code" class="img-fluid" style="max-width: 300px;">
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <tbody>
+                                <tr>
+                                    <th>Table Number</th>
+                                    <td>{{ table.number }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Seats</th>
+                                    <td>{{ table.seats }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Access URL</th>
+                                    <td>
+                                        <a href="{{ table_url }}" target="_blank">{{ table_url }}</a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Session Token</th>
+                                    <td>{{ token }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Expires At</th>
+                                    <td>{{ expires_at|date:"Y-m-d H:i:s" }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <h5>Instructions:</h5>
+                        <ol>
+                            <li>Scan the QR code with your mobile device</li>
+                            <li>You will be redirected to the home page</li>
+                            <li>The session will expire in 12 minutes</li>
+                            <li>You can scan again to create a new session</li>
+                        </ol>
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        <a href="{% url 'tables:table_status' table.id %}" class="btn btn-info">
+                            Check Table Status
+                        </a>
+                        <a href="{% url 'home' %}" class="btn btn-primary">
+                            Go to Home
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .card {
+        box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+    .card-header {
+        border-bottom: none;
+    }
+    .table th {
+        width: 30%;
+        background-color: #f8f9fa;
+    }
+</style>
+{% endblock %} 

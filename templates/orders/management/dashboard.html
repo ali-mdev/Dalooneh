@@ -1,0 +1,457 @@
+{% extends 'orders/management/base.html' %}
+{% load humanize %}
+
+{% block title %}Orders Management Dashboard{% endblock %}
+
+{% block page_title %}Orders Management Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Dashboard Design System - Core Styles */
+    .dashboard-stats {
+        margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        position: relative;
+        border: none;
+        height: 100%;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    }
+    
+    .stat-card-inner {
+        position: relative;
+        z-index: 2;
+        padding: 1.5rem;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 100%);
+        z-index: 1;
+    }
+    
+    .stat-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    
+    .stat-card-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: rgba(255, 255, 255, 0.2);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .stat-card:hover .stat-card-icon {
+        transform: scale(1.1) rotate(5deg);
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+    }
+    
+    .stat-card-icon i {
+        font-size: 1.8rem;
+        color: rgba(255, 255, 255, 0.9);
+    }
+    
+    .stat-card-body {
+        flex-grow: 1;
+    }
+    
+    .stat-card-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: rgba(255, 255, 255, 0.9);
+    }
+    
+    .stat-card-value {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        color: white;
+    }
+    
+    .stat-card-footer {
+        margin-top: auto;
+        padding-top: 1rem;
+    }
+    
+    /* Color Schemes */
+    .stat-card.primary {
+        background: linear-gradient(135deg, #6e8efb 0%, #4a6cf7 100%);
+    }
+    
+    .stat-card.success {
+        background: linear-gradient(135deg, #48d6a8 0%, #029666 100%);
+    }
+    
+    .stat-card.info {
+        background: linear-gradient(135deg, #5ccaed 0%, #23a6d5 100%);
+    }
+    
+    .stat-card.warning {
+        background: linear-gradient(135deg, #ffcf17 0%, #ff9a00 100%);
+    }
+    
+    /* Data Tables */
+    .data-card {
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+        position: relative;
+        border: none;
+        background-color: white;
+        margin-bottom: 1.5rem;
+    }
+    
+    .data-card:hover {
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    }
+    
+    .data-card-header {
+        padding: 1.2rem 1.5rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        background-color: rgba(248, 249, 250, 0.5);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .data-card-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 0;
+        color: #344767;
+    }
+    
+    .data-card-body {
+        padding: 1.5rem;
+    }
+    
+    .data-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+    
+    .data-table th {
+        font-weight: 600;
+        color: #344767;
+        background-color: rgba(248, 249, 250, 0.5);
+        padding: 1rem;
+        font-size: 0.85rem;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    
+    .data-table td {
+        padding: 1rem;
+        vertical-align: middle;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        font-size: 0.95rem;
+    }
+    
+    .data-table tr:last-child td {
+        border-bottom: none;
+    }
+    
+    .data-table tr:hover td {
+        background-color: rgba(248, 249, 250, 0.5);
+    }
+    
+    .badge {
+        padding: 0.5rem 0.8rem;
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 0.8rem;
+    }
+    
+    .btn-table {
+        border-radius: 8px;
+        padding: 0.4rem 0.7rem;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-table:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Quick Order Button */
+    .quick-order-container {
+        margin-bottom: 2rem;
+    }
+    
+    .quick-order-btn {
+        display: block;
+        width: 100%;
+        padding: 1.5rem;
+        border-radius: 16px;
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: white;
+        background: linear-gradient(135deg, #ff6b6b 0%, #ee5253 100%);
+        border: none;
+        box-shadow: 0 10px 20px rgba(238, 82, 83, 0.2);
+        transition: all 0.3s ease;
+        text-align: center;
+        text-decoration: none;
+    }
+    
+    .quick-order-btn:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(238, 82, 83, 0.3);
+        color: white;
+    }
+    
+    .quick-order-btn i {
+        margin-left: 10px;
+        font-size: 1.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Main Stats -->
+<div class="row dashboard-stats">
+    <div class="col-md-3 mb-4">
+        <div class="stat-card primary">
+            <div class="stat-card-inner">
+                <div class="stat-card-header">
+                    <div class="stat-card-icon">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                </div>
+                <div class="stat-card-body">
+                    <div class="stat-card-title">Total Orders</div>
+                    <div class="stat-card-value">{{ total_orders }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-4">
+        <div class="stat-card success">
+            <div class="stat-card-inner">
+                <div class="stat-card-header">
+                    <div class="stat-card-icon">
+                        <i class="fas fa-calendar-day"></i>
+                    </div>
+                </div>
+                <div class="stat-card-body">
+                    <div class="stat-card-title">Today's Orders</div>
+                    <div class="stat-card-value">{{ today_orders }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-4">
+        <div class="stat-card info">
+            <div class="stat-card-inner">
+                <div class="stat-card-header">
+                    <div class="stat-card-icon">
+                        <i class="fas fa-money-bill-wave"></i>
+                    </div>
+                </div>
+                <div class="stat-card-body">
+                    <div class="stat-card-title">Total Payments</div>
+                    <div class="stat-card-value" style="font-size: 1.5rem;">{{ total_payments|intcomma:False }}</div>
+                    <div style="color: rgba(255,255,255,0.7); font-size: 0.9rem;">USD</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-4">
+        <div class="stat-card warning">
+            <div class="stat-card-inner">
+                <div class="stat-card-header">
+                    <div class="stat-card-icon">
+                        <i class="fas fa-coins"></i>
+                    </div>
+                </div>
+                <div class="stat-card-body">
+                    <div class="stat-card-title">Today's Payments</div>
+                    <div class="stat-card-value" style="font-size: 1.5rem;">{{ today_payments|intcomma:False }}</div>
+                    <div style="color: rgba(255,255,255,0.7); font-size: 0.9rem;">USD</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Order Button -->
+<div class="row">
+    <div class="col-12 quick-order-container">
+        <a href="{% url 'orders:management_quick_order' %}" class="quick-order-btn">
+            <i class="fas fa-bolt"></i> Quick Order (Without QR Scan)
+        </a>
+    </div>
+</div>
+
+<!-- Status Tables -->
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="data-card">
+            <div class="data-card-header">
+                <h5 class="data-card-title">Order Status</h5>
+            </div>
+            <div class="data-card-body">
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Status</th>
+                                <th>Count</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for status in orders_by_status %}
+                            <tr>
+                                <td>
+                                    {% for code, name in Order.STATUS_CHOICES %}
+                                        {% if code == status.status %}{{ name }}{% endif %}
+                                    {% endfor %}
+                                </td>
+                                <td>{{ status.count }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="2" class="text-center">No data found</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="data-card">
+            <div class="data-card-header">
+                <h5 class="data-card-title">Payment Status</h5>
+            </div>
+            <div class="data-card-body">
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Status</th>
+                                <th>Count</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for status in orders_by_payment_status %}
+                            <tr>
+                                <td>
+                                    {% for code, name in Order.PAYMENT_STATUS_CHOICES %}
+                                        {% if code == status.payment_status %}{{ name }}{% endif %}
+                                    {% endfor %}
+                                </td>
+                                <td>{{ status.count }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="2" class="text-center">No data found</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Orders -->
+<div class="row">
+    <div class="col-12">
+        <div class="data-card">
+            <div class="data-card-header">
+                <h5 class="data-card-title">Recent Orders</h5>
+                <a href="{% url 'orders:management_order_list' %}" class="btn btn-primary btn-sm">View All</a>
+            </div>
+            <div class="data-card-body">
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Order Number</th>
+                                <th>Customer</th>
+                                <th>Table</th>
+                                <th>Final Amount</th>
+                                <th>Status</th>
+                                <th>Payment Status</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in recent_orders %}
+                            <tr>
+                                <td>{{ order.order_number }}</td>
+                                <td>{{ order.customer }}</td>
+                                <td>{{ order.table }}</td>
+                                <td>{{ order.final_amount|intcomma:False }} USD</td>
+                                <td>
+                                    <span class="badge {% if order.status == 'cancelled' %}bg-danger{% elif order.status == 'delivered' %}bg-success{% elif order.status == 'ready' %}bg-info{% else %}bg-warning{% endif %}">
+                                        {% for code, name in order.STATUS_CHOICES %}
+                                            {% if code == order.status %}{{ name }}{% endif %}
+                                        {% endfor %}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge {% if order.payment_status == 'paid' %}bg-success{% elif order.payment_status == 'partial' %}bg-warning{% else %}bg-danger{% endif %}">
+                                        {% for code, name in order.PAYMENT_STATUS_CHOICES %}
+                                            {% if code == order.payment_status %}{{ name }}{% endif %}
+                                        {% endfor %}
+                                    </span>
+                                </td>
+                                <td>{{ order.created_at|date:"Y/m/d H:i" }}</td>
+                                <td>
+                                    <a href="{% url 'orders:management_order_detail' order.id %}" class="btn btn-sm btn-primary btn-table" title="View Details">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="8" class="text-center">No orders found</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

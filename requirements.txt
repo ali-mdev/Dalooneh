@@ -1,0 +1,11 @@
+Django>=5.2.1
+Pillow>=10.0.0
+qrcode>=7.4.2
+python-slugify>=8.0.1
+django-crispy-forms>=2.1
+crispy-bootstrap5>=2024.2
+channels>=4.0.0
+daphne>=4.0.0
+channels-redis>=4.1.0
+psycopg2-binary>=2.9.0
+uvicorn>=0.20.0

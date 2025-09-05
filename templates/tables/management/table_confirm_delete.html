@@ -1,0 +1,88 @@
+{% extends 'tables/management/base.html' %}
+
+{% block title %}Delete Table{% endblock %}
+
+{% block page_title %}Delete Table #{{ table.number }}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header bg-danger text-white">
+        <h5 class="mb-0">Confirm Deletion</h5>
+    </div>
+    <div class="card-body">
+        <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            Warning: This operation is irreversible!
+        </div>
+        
+        <p>Are you sure you want to delete table number {{ table.number }}?</p>
+        
+        {% if table.is_occupied %}
+        <div class="alert alert-danger mb-4">
+            <i class="fas fa-times-circle me-2"></i>
+            <strong>Error:</strong> This table is currently occupied and cannot be deleted.
+        </div>
+        {% endif %}
+        
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0">Table Information</h6>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-sm">
+                            <tr>
+                                <th>Table Number:</th>
+                                <td>{{ table.number }}</td>
+                            </tr>
+                            <tr>
+                                <th>Capacity:</th>
+                                <td>{{ table.seats }} People</td>
+                            </tr>
+                            <tr>
+                                <th>Activity Status:</th>
+                                <td>
+                                    {% if table.is_active %}
+                                    <span class="badge bg-success">Active</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">Inactive</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Occupancy Status:</th>
+                                <td>
+                                    {% if table.is_occupied %}
+                                    <span class="badge bg-danger">Occupied</span>
+                                    {% else %}
+                                    <span class="badge bg-success">Free</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Created At:</th>
+                                <td>{{ table.created_at|date:"Y/m/d H:i" }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <form method="post">
+            {% csrf_token %}
+            <div class="d-flex justify-content-end">
+                <a href="{% url 'tables:management_table_detail' table.id %}" class="btn btn-secondary me-2">
+                    <i class="fas fa-times me-1"></i>
+                    Cancel
+                </a>
+                <button type="submit" class="btn btn-danger" {% if table.is_occupied %}disabled{% endif %}>
+                    <i class="fas fa-trash me-1"></i>
+                    Confirm Delete
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %} 
